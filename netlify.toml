@@ -4,6 +4,12 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Supabase (VITE_ = kailangan sa build time; anon key ay public/RLS-protected).
+  # Nakalagay dito para laging available sa Netlify build kahit walang
+  # UI env vars. Puwede i-override sa Netlify UI kung iba ang environment.
+  VITE_SUPABASE_URL = "https://abwvxrrgzaerlvopbdvi.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFid3Z4cnJnemFlcmx2b3BiZHZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NDc5MjEsImV4cCI6MjEwMDEyMzkyMX0.RXlQJiZgfkJvIJSbU8YkaLoWCi00_5-hnMJGfGVID9M"
+  VITE_APP_NAME = "Santa Cicilia Subdivision"
 
 # SPA fallback — kailangan ito para hindi mag-404 ang deep links
 # tulad ng /login, /dashboard/bills/123 kapag ni-refresh.
