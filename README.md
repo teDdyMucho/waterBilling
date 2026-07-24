@@ -78,9 +78,9 @@ docs/           PRD.md · PHASES.md
 
 - [x] **Phase 0** — Foundation, design system, landing page, Netlify config
 - [x] **Phase 1** — Auth & role routing (Supabase) — register, login, pending gate, admin approvals, RLS
-- [ ] **Phase 2** — Master data (properties, meters, users)
-- [ ] **Phase 3** — Meter reading + required photo
-- [ ] **Phase 4** — Billing engine
+- [x] **Phase 2** — Master data — properties, meters, homeowner linking (+ CSV import, staff zones, meter replacement)
+- [x] **Phase 3** — Meter reading + required photo — worklist, anomaly detection, verify/reject
+- [x] **Phase 4** — Billing engine — effective-dated rates, bill generation, penalties
 - [ ] **Phase 5** — Homeowner portal
 - [ ] **Phase 6** — Messaging & notifications
 - [ ] **Phase 7** — 💰 Payment (submit → endorse → confirm)
