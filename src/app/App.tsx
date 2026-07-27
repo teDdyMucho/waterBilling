@@ -1,5 +1,7 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { PageLoader } from '@/components/ui/Spinner'
 import { I18nProvider } from '@/i18n/I18nProvider'
 import { AuthProvider } from '@/features/auth/AuthProvider'
 import {
@@ -18,6 +20,9 @@ import PendingPage from '@/pages/auth/PendingPage'
 import BlockedPage from '@/pages/auth/BlockedPage'
 import HomeownerHome from '@/pages/portal/HomeownerHome'
 import { HomeownerBills, HomeownerBillDetail } from '@/pages/portal/HomeownerBills'
+// Lazy — recharts ay mabigat; huwag isama sa initial bundle.
+const HomeownerConsumption = lazy(() => import('@/pages/portal/HomeownerConsumption'))
+import HomeownerProfile from '@/pages/portal/HomeownerProfile'
 import AdminRates from '@/pages/portal/AdminRates'
 import StaffHome from '@/pages/portal/StaffHome'
 import AdminHome from '@/pages/portal/AdminHome'
@@ -69,6 +74,15 @@ export default function App() {
                   <Route path="/dashboard" element={<HomeownerHome />} />
                   <Route path="/dashboard/bills" element={<HomeownerBills />} />
                   <Route path="/dashboard/bills/:id" element={<HomeownerBillDetail />} />
+                  <Route
+                    path="/dashboard/consumption"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <HomeownerConsumption />
+                      </Suspense>
+                    }
+                  />
+                  <Route path="/dashboard/profile" element={<HomeownerProfile />} />
                 </Route>
                 <Route element={<RoleGuard allow={['staff']} />}>
                   <Route path="/staff" element={<StaffHome />} />

@@ -156,6 +156,32 @@
     "reasonLabel": "Dahilan",
     "contactOffice": "Kontakin ang opisina ng HOA"
   },
+  "consumption": {
+    "title": "Konsumo",
+    "sub": "Ang buwanang paggamit mo ng tubig at kuryente.",
+    "none": "Wala pang konsumo. Lalabas ito kapag nagsimula na ang pagbasa ng metro.",
+    "waterTitle": "Tubig (m³)",
+    "electricTitle": "Kuryente (kWh)",
+    "vsLast": "kumpara noong nakaraang cycle",
+    "used": "Nagamit"
+  },
+  "profile": {
+    "title": "Profile",
+    "sub": "Ang contact details at password mo.",
+    "fullName": "Buong pangalan",
+    "contact": "Numero",
+    "language": "Wikang gustong gamitin",
+    "email": "Email",
+    "lot": "Block / Lot",
+    "readonly": "Makipag-ugnayan sa opisina ng HOA para palitan ang email o lote.",
+    "save": "I-save ang pagbabago",
+    "saved": "Na-update ang profile.",
+    "changePassword": "Palitan ang password",
+    "newPassword": "Bagong password",
+    "confirmPassword": "Ulitin ang password",
+    "updatePassword": "I-update ang password",
+    "passwordUpdated": "Na-update ang password."
+  },
   "billing": {
     "ratesTitle": "Rate at Singil",
     "ratesSub": "Itakda ang tubig, kuryente, dues, at penalty. Effective-dated ang pagbabago — hindi apektado ang lumang bill.",
@@ -285,6 +311,7 @@
     "payments": "Mga Bayad",
     "messages": "Mga Mensahe",
     "consumption": "Konsumo",
+    "profile": "Profile",
     "properties": "Lote at Metro",
     "rates": "Rate at Cycle",
     "readings": "Pagbasa ng Metro",

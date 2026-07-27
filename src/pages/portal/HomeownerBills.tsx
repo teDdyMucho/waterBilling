@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight, Droplets, Receipt, Zap } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
 import { fetchBill, fetchMyBills } from '@/features/billing/billing-api'
-import { Card, CardBody } from '@/components/ui/Card'
+import { fetchReadingPhotoPath, getSignedPhotoUrl } from '@/features/readings/readings-api'
+import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageLoader, Spinner } from '@/components/ui/Spinner'
@@ -166,6 +170,15 @@ export function HomeownerBillDetail() {
             </CardBody>
           </Card>
 
+          {/* Meter photos — patunay ng reading */}
+          <MeterPhotos
+            items={
+              bill.items?.filter(
+                (it) => it.meter_reading_id && (it.item_type === 'water' || it.item_type === 'electric'),
+              ) ?? []
+            }
+          />
+
           {/* Pay CTA (Phase 7) */}
           {bill.balance > 0 && (
             <Alert tone="info">{t('billing.paySoon')}</Alert>
@@ -173,6 +186,58 @@ export function HomeownerBillDetail() {
         </div>
       )}
     </AppShell>
+  )
+}
+
+function MeterPhotos({
+  items,
+}: {
+  items: { id: string; item_type: string; meter_reading_id: string | null; description: string | null }[]
+}) {
+  const { t } = useT()
+  const [photo, setPhoto] = useState<string | null>(null)
+  const [loading, setLoading] = useState<string | null>(null)
+
+  if (items.length === 0) return null
+
+  async function view(readingId: string) {
+    setLoading(readingId)
+    try {
+      const path = await fetchReadingPhotoPath(readingId)
+      if (path) setPhoto(await getSignedPhotoUrl(path))
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  return (
+    <>
+      <Card>
+        <CardHeader title={t('readings.photo')} />
+        <CardBody className="flex flex-wrap gap-2">
+          {items.map((it) => (
+            <Button
+              key={it.id}
+              variant="outline"
+              size="sm"
+              loading={loading === it.meter_reading_id}
+              onClick={() => it.meter_reading_id && view(it.meter_reading_id)}
+              iconLeft={
+                it.item_type === 'water' ? <Droplets className="size-4" /> : <Zap className="size-4" />
+              }
+            >
+              {it.description ?? it.item_type}
+            </Button>
+          ))}
+        </CardBody>
+      </Card>
+
+      <Modal open={Boolean(photo)} onClose={() => setPhoto(null)} title={t('readings.viewPhoto')} size="lg">
+        {photo && (
+          <img src={photo} alt="meter" className="max-h-[70vh] w-full rounded-input object-contain" />
+        )}
+      </Modal>
+    </>
   )
 }
 

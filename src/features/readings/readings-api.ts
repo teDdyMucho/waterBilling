@@ -82,6 +82,17 @@ export async function uploadMeterPhoto(
   return path
 }
 
+/** Kunin ang photo_path ng isang reading (para sa bill detail viewer). */
+export async function fetchReadingPhotoPath(readingId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('meter_readings')
+    .select('photo_path')
+    .eq('id', readingId)
+    .maybeSingle()
+  if (error) throw error
+  return (data as { photo_path: string } | null)?.photo_path ?? null
+}
+
 /** Signed URL (5 min) para matingnan ang pribadong litrato. */
 export async function getSignedPhotoUrl(path: string): Promise<string> {
   const { data, error } = await supabase.storage
@@ -182,6 +193,38 @@ export async function rejectReading(id: string, reason: string): Promise<void> {
     .update({ status: 'rejected', remarks: reason })
     .eq('id', id)
   if (error) throw error
+}
+
+export interface ConsumptionPoint {
+  code: string
+  water: number | null
+  electric: number | null
+}
+
+/**
+ * Kasaysayan ng konsumo ng homeowner (hanggang 12 cycle).
+ * RLS: sariling metro lang ang babalik (owns_meter).
+ */
+export async function fetchMyConsumption(): Promise<ConsumptionPoint[]> {
+  const { data, error } = await supabase
+    .from('meter_readings')
+    .select('consumption, status, meter:meters(utility_type), cycle:billing_cycles(code)')
+    .in('status', ['verified', 'for_review'])
+  if (error) throw error
+
+  const map = new Map<string, ConsumptionPoint>()
+  for (const row of (data ?? []) as unknown as {
+    consumption: number
+    meter: { utility_type: string } | null
+    cycle: { code: string } | null
+  }[]) {
+    const code = row.cycle?.code ?? '—'
+    if (!map.has(code)) map.set(code, { code, water: null, electric: null })
+    const p = map.get(code)!
+    if (row.meter?.utility_type === 'water') p.water = Number(row.consumption)
+    else if (row.meter?.utility_type === 'electric') p.electric = Number(row.consumption)
+  }
+  return [...map.values()].sort((a, b) => a.code.localeCompare(b.code)).slice(-12)
 }
 
 /** Pinakabagong reading ng isang metro (para sa homeowner card). */

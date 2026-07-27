@@ -156,6 +156,32 @@
     "reasonLabel": "Reason",
     "contactOffice": "Contact the HOA office"
   },
+  "consumption": {
+    "title": "Consumption",
+    "sub": "Your monthly water and electricity usage.",
+    "none": "No consumption yet. It appears once meter readings start.",
+    "waterTitle": "Water (m³)",
+    "electricTitle": "Electricity (kWh)",
+    "vsLast": "vs. last cycle",
+    "used": "Used"
+  },
+  "profile": {
+    "title": "Profile",
+    "sub": "Your contact details and password.",
+    "fullName": "Full name",
+    "contact": "Contact number",
+    "language": "Preferred language",
+    "email": "Email",
+    "lot": "Block / Lot",
+    "readonly": "Contact the HOA office to change your email or lot.",
+    "save": "Save changes",
+    "saved": "Profile updated.",
+    "changePassword": "Change password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "updatePassword": "Update password",
+    "passwordUpdated": "Password updated."
+  },
   "billing": {
     "ratesTitle": "Rates & Charges",
     "ratesSub": "Set water, electricity, dues, and penalty. Changes are effective-dated — old bills are not affected.",
@@ -285,6 +311,7 @@
     "payments": "Payments",
     "messages": "Messages",
     "consumption": "Consumption",
+    "profile": "Profile",
     "properties": "Properties & Meters",
     "rates": "Rates & Cycles",
     "readings": "Meter Readings",

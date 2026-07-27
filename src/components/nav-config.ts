@@ -10,6 +10,7 @@ import {
   Receipt,
   Camera,
   ShieldCheck,
+  UserCircle,
   Users,
   type LucideIcon,
 } from 'lucide-react'
@@ -40,12 +41,8 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       items: [
         { to: '/dashboard', labelKey: 'sidebar.dashboard', icon: LayoutDashboard, end: true },
         { to: '/dashboard/bills', labelKey: 'sidebar.bills', icon: Receipt },
-        {
-          to: '/dashboard/consumption',
-          labelKey: 'sidebar.consumption',
-          icon: Droplets,
-          soon: true,
-        },
+        { to: '/dashboard/consumption', labelKey: 'sidebar.consumption', icon: Droplets },
+        { to: '/dashboard/profile', labelKey: 'sidebar.profile', icon: UserCircle },
         {
           to: '/dashboard/payments',
           labelKey: 'sidebar.payments',

@@ -60,6 +60,15 @@ export async function updatePassword(newPassword: string) {
   if (error) throw error
 }
 
+/** Ina-update ng user ang sariling profile (name/contact/language lang). */
+export async function updateMyProfile(
+  userId: string,
+  input: { full_name?: string; contact_number?: string; preferred_language?: string },
+): Promise<void> {
+  const { error } = await supabase.from('profiles').update(input).eq('id', userId)
+  if (error) throw error
+}
+
 /** Kinukuha ang profile row ng kasalukuyang user (o null kung wala pa). */
 export async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
