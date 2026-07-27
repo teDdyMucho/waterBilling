@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Bell, Clock, LogOut, Menu, Phone, X } from 'lucide-react'
+import { Clock, LogOut, Menu, Phone, X } from 'lucide-react'
 import { Logo, LogoMark } from '@/components/Logo'
 import { LanguageToggle } from '@/components/LanguageToggle'
+import { NotificationBell } from '@/components/NotificationBell'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { NAV_BY_ROLE, type NavGroup } from '@/components/nav-config'
 import { useAuth } from '@/hooks/useAuth'
@@ -102,15 +103,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Badge tone={ROLE_TONE[role]} className="hidden capitalize sm:inline-flex">
               {role}
             </Badge>
-            <button
-              type="button"
-              aria-label="Notifications"
-              title={t('sidebar.soon')}
-              className="relative grid size-10 place-items-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
-            >
-              <Bell className="size-[1.15rem]" />
-              <span className="absolute right-2 top-2 size-2 rounded-full bg-brand-500 ring-2 ring-white" />
-            </button>
+            <NotificationBell />
             <span className="hidden h-6 w-px bg-slate-200 sm:block" />
             <LanguageToggle />
           </div>

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { AlertTriangle, ArrowRight, CalendarClock, CreditCard, MessageSquare, Receipt } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CalendarClock, CreditCard, Receipt } from 'lucide-react'
 import { AppShell } from '@/components/AppShell'
 import { WelcomeBanner } from '@/components/WelcomeBanner'
 import { FeaturePreviewGrid } from '@/components/FeaturePreviewGrid'
@@ -91,12 +91,6 @@ export default function HomeownerHome() {
             title: t('sidebar.payments'),
             desc: 'Magbayad online at i-upload ang resibo.',
             tint: 'success',
-          },
-          {
-            icon: MessageSquare,
-            title: t('sidebar.messages'),
-            desc: 'Ipadala ang concern diretso sa staff at admin.',
-            tint: 'info',
           },
         ]}
       />

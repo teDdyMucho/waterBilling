@@ -208,3 +208,66 @@ export interface BillWithRelations extends Bill {
   cycle: { code: string } | null
   property: Pick<Property, 'block' | 'lot'> | null
 }
+
+// ---- Phase 6: Messaging & Notifications ----------------------------
+
+export type ThreadCategory = 'billing' | 'meter' | 'requirements' | 'complaint' | 'others'
+export type ThreadStatus = 'open' | 'in_progress' | 'escalated' | 'resolved' | 'closed'
+
+export interface Attachment {
+  path: string
+  name: string
+}
+
+export interface MessageThread {
+  id: string
+  ticket_no: string
+  property_id: string | null
+  opened_by: string
+  category: ThreadCategory
+  subject: string
+  priority: 'low' | 'normal' | 'high'
+  status: ThreadStatus
+  assigned_to: string | null
+  last_message_at: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ThreadMessage {
+  id: string
+  thread_id: string
+  sender_id: string
+  body: string
+  attachments: Attachment[]
+  is_internal_note: boolean
+  created_at: string
+}
+
+/** Thread na may kasamang pangalan ng nag-open (para sa inbox). */
+export interface ThreadWithOpener extends MessageThread {
+  opener: { full_name: string } | null
+}
+
+export interface AppNotification {
+  id: string
+  recipient_id: string
+  type: string
+  title: string
+  body: string | null
+  link: string | null
+  is_read: boolean
+  created_at: string
+}
+
+export interface Announcement {
+  id: string
+  title: string
+  body: string
+  audience: 'all' | 'homeowners' | 'staff' | 'block'
+  target_block: string | null
+  is_public: boolean
+  posted_by: string | null
+  published_at: string
+  created_at: string
+}

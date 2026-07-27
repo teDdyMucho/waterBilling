@@ -49,12 +49,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
           icon: CreditCard,
           soon: true,
         },
-        {
-          to: '/dashboard/messages',
-          labelKey: 'sidebar.messages',
-          icon: MessageSquare,
-          soon: true,
-        },
+        { to: '/dashboard/messages', labelKey: 'sidebar.messages', icon: MessageSquare },
       ],
     },
   ],
@@ -65,13 +60,8 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
         { to: '/staff', labelKey: 'sidebar.workspace', icon: LayoutDashboard, end: true },
         { to: '/staff/properties', labelKey: 'sidebar.properties', icon: Building2 },
         { to: '/staff/readings', labelKey: 'sidebar.readings', icon: Camera },
+        { to: '/staff/concerns', labelKey: 'sidebar.concerns', icon: MessageSquare },
         { to: '/staff/bills', labelKey: 'sidebar.bills', icon: Receipt, soon: true },
-        {
-          to: '/staff/concerns',
-          labelKey: 'sidebar.concerns',
-          icon: MessageSquare,
-          soon: true,
-        },
       ],
     },
   ],
@@ -81,6 +71,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       items: [
         { to: '/admin', labelKey: 'sidebar.dashboard', icon: LayoutDashboard, end: true },
         { to: '/admin/accounts', labelKey: 'sidebar.accounts', icon: Users },
+        { to: '/admin/concerns', labelKey: 'sidebar.concerns', icon: MessageSquare },
       ],
     },
     {

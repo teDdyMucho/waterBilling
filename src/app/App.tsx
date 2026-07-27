@@ -23,7 +23,9 @@ import { HomeownerBills, HomeownerBillDetail } from '@/pages/portal/HomeownerBil
 // Lazy — recharts ay mabigat; huwag isama sa initial bundle.
 const HomeownerConsumption = lazy(() => import('@/pages/portal/HomeownerConsumption'))
 import HomeownerProfile from '@/pages/portal/HomeownerProfile'
+import HomeownerMessages from '@/pages/portal/HomeownerMessages'
 import AdminRates from '@/pages/portal/AdminRates'
+import { StaffConcerns, AdminConcerns } from '@/pages/portal/StaffConcerns'
 import StaffHome from '@/pages/portal/StaffHome'
 import AdminHome from '@/pages/portal/AdminHome'
 import AdminAccounts from '@/pages/portal/AdminAccounts'
@@ -83,12 +85,16 @@ export default function App() {
                     }
                   />
                   <Route path="/dashboard/profile" element={<HomeownerProfile />} />
+                  <Route path="/dashboard/messages" element={<HomeownerMessages />} />
+                  <Route path="/dashboard/messages/:id" element={<HomeownerMessages />} />
                 </Route>
                 <Route element={<RoleGuard allow={['staff']} />}>
                   <Route path="/staff" element={<StaffHome />} />
                   <Route path="/staff/properties" element={<StaffProperties />} />
                   <Route path="/staff/properties/:id" element={<StaffPropertyDetail />} />
                   <Route path="/staff/readings" element={<StaffWorklist />} />
+                  <Route path="/staff/concerns" element={<StaffConcerns />} />
+                  <Route path="/staff/concerns/:id" element={<StaffConcerns />} />
                 </Route>
                 <Route element={<RoleGuard allow={['admin']} />}>
                   <Route path="/admin" element={<AdminHome />} />
@@ -98,6 +104,8 @@ export default function App() {
                   <Route path="/admin/cycles" element={<AdminCycles />} />
                   <Route path="/admin/review" element={<AdminReview />} />
                   <Route path="/admin/rates" element={<AdminRates />} />
+                  <Route path="/admin/concerns" element={<AdminConcerns />} />
+                  <Route path="/admin/concerns/:id" element={<AdminConcerns />} />
                 </Route>
               </Route>
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Camera, MessageSquare, Receipt } from 'lucide-react'
+import { ArrowRight, Camera, Receipt } from 'lucide-react'
 import { AppShell } from '@/components/AppShell'
 import { WelcomeBanner } from '@/components/WelcomeBanner'
 import { FeaturePreviewGrid } from '@/components/FeaturePreviewGrid'
@@ -47,12 +47,6 @@ export default function StaffHome() {
             title: t('sidebar.bills'),
             desc: 'Tingnan ang bill at balanse ng homeowner.',
             tint: 'success',
-          },
-          {
-            icon: MessageSquare,
-            title: t('sidebar.concerns'),
-            desc: 'Sagutin ang mga concern at requirement.',
-            tint: 'power',
           },
         ]}
       />
