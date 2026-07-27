@@ -281,16 +281,59 @@ function MessageBubble({ message: m, mine }: { message: ThreadMessage; mine: boo
           )}
           {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
           {m.attachments?.length > 0 && (
-            <div className={cn('mt-1.5 flex flex-wrap gap-1.5', mine && 'justify-end')}>
-              {m.attachments.map((a, i) => (
-                <AttachmentChip key={i} attachment={a} mine={mine && !m.is_internal_note} />
-              ))}
+            <div className={cn('mt-1.5 space-y-1.5', mine && 'flex flex-col items-end')}>
+              {m.attachments.map((a, i) =>
+                isImageAttachment(a.name || a.path) ? (
+                  <ImageAttachment key={i} attachment={a} />
+                ) : (
+                  <AttachmentChip key={i} attachment={a} mine={mine && !m.is_internal_note} />
+                ),
+              )}
             </div>
           )}
         </div>
         <p className="mt-0.5 text-[0.6875rem] text-slate-400">{dateTime(m.created_at)}</p>
       </div>
     </div>
+  )
+}
+
+function isImageAttachment(nameOrPath: string): boolean {
+  return /\.(png|jpe?g|gif|webp|heic|heif|bmp|avif)$/i.test(nameOrPath)
+}
+
+/** Litratong attachment — agad na ipinapakita bilang inline thumbnail. */
+function ImageAttachment({ attachment }: { attachment: Attachment }) {
+  const [url, setUrl] = useState<string | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    getAttachmentUrl(attachment.path)
+      .then((u) => active && setUrl(u))
+      .catch(() => active && setFailed(true))
+    return () => {
+      active = false
+    }
+  }, [attachment.path])
+
+  if (failed) return <AttachmentChip attachment={attachment} mine={false} />
+  if (!url) {
+    return <div className="shimmer h-40 w-56 max-w-full rounded-lg" aria-hidden />
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => window.open(url, '_blank', 'noopener')}
+      className="block overflow-hidden rounded-lg ring-1 ring-inset ring-black/5"
+      title={attachment.name}
+    >
+      <img
+        src={url}
+        alt={attachment.name}
+        className="max-h-64 w-auto max-w-full object-cover transition-transform hover:scale-[1.02]"
+      />
+    </button>
   )
 }
 
