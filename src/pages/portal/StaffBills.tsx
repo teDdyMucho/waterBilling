@@ -6,6 +6,7 @@ import { AppShell, PageHeader } from '@/components/AppShell'
 import { fetchAllBills, fetchBill } from '@/features/billing/billing-api'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
+import { Avatar } from '@/components/ui/Avatar'
 import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageLoader, Spinner } from '@/components/ui/Spinner'
@@ -35,7 +36,9 @@ export default function StaffBills() {
     const q = search.trim().toLowerCase()
     if (!q) return bills
     return bills.filter((b) =>
-      `${b.property?.block ?? ''} ${b.property?.lot ?? ''} ${b.bill_no}`.toLowerCase().includes(q),
+      `${b.ownerName ?? ''} ${b.property?.block ?? ''} ${b.property?.lot ?? ''} ${b.bill_no}`
+        .toLowerCase()
+        .includes(q),
     )
   }, [bills, search])
 
@@ -65,31 +68,31 @@ export default function StaffBills() {
           </div>
         ) : (
           <ul className="divide-y divide-slate-100">
-            {rows.map((b) => (
-              <li key={b.id}>
-                <Link
-                  to={`/staff/bills/${b.id}`}
-                  className="flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-slate-50 sm:px-5"
-                >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200">
-                    <Receipt className="size-5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-slate-900">
-                      {lotLabel(b.property?.block, b.property?.lot)}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {b.bill_no} · {b.cycle?.code ?? '—'}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="tabular font-semibold text-slate-900">{money(b.balance)}</p>
-                    <Badge tone={TONE[b.status]}>{t(`billing.st_${b.status}`)}</Badge>
-                  </div>
-                  <ChevronRight className="size-5 shrink-0 text-slate-300" />
-                </Link>
-              </li>
-            ))}
+            {rows.map((b) => {
+              const lot = lotLabel(b.property?.block, b.property?.lot)
+              return (
+                <li key={b.id}>
+                  <Link
+                    to={`/staff/bills/${b.id}`}
+                    className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50 sm:gap-4 sm:px-5"
+                  >
+                    <Avatar url={b.ownerAvatar} name={b.ownerName ?? lot} size="md" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold text-slate-900">{b.ownerName ?? lot}</p>
+                      <p className="truncate text-xs text-slate-500">
+                        {b.ownerName ? `${lot} · ` : ''}
+                        {b.bill_no} · {b.cycle?.code ?? '—'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="tabular font-semibold text-slate-900">{money(b.balance)}</p>
+                      <Badge tone={TONE[b.status]}>{t(`billing.st_${b.status}`)}</Badge>
+                    </div>
+                    <ChevronRight className="size-5 shrink-0 text-slate-300" />
+                  </Link>
+                </li>
+              )
+            })}
           </ul>
         )}
       </Card>
@@ -100,6 +103,10 @@ export default function StaffBills() {
 function StaffBillDetail({ id }: { id: string }) {
   const { t } = useT()
   const { data: bill, isLoading } = useQuery({ queryKey: ['bill', id], queryFn: () => fetchBill(id) })
+  const owner = bill?.property?.owners?.find((o) => !o.end_date)?.profile ?? null
+  const ownerName = owner?.full_name ?? null
+  const ownerAvatar = owner?.avatar_url ?? null
+  const lot = lotLabel(bill?.property?.block, bill?.property?.lot)
 
   if (isLoading) return <PageLoader />
 
@@ -124,13 +131,15 @@ function StaffBillDetail({ id }: { id: string }) {
           <Card>
             <CardBody>
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold text-slate-900">
-                    {lotLabel(bill.property?.block, bill.property?.lot)}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {bill.bill_no} · {bill.cycle?.code}
-                  </p>
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar url={ownerAvatar} name={ownerName ?? lot} size="md" />
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-slate-900">{ownerName ?? lot}</p>
+                    <p className="truncate text-xs text-slate-400">
+                      {ownerName ? `${lot} · ` : ''}
+                      {bill.bill_no} · {bill.cycle?.code}
+                    </p>
+                  </div>
                 </div>
                 <Badge tone={TONE[bill.status]}>{t(`billing.st_${bill.status}`)}</Badge>
               </div>

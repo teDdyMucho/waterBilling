@@ -87,20 +87,45 @@ export async function fetchBillsForCycle(cycleId: string): Promise<
   })[]
 }
 
-/** Lahat ng released na bill (staff/admin read-only view). */
-export async function fetchAllBills(): Promise<
-  (Bill & { cycle: { code: string } | null; property: { block: string; lot: string } | null })[]
-> {
+export interface BillListRow extends Bill {
+  cycle: { code: string } | null
+  property: { block: string; lot: string } | null
+  ownerName: string | null
+  ownerAvatar: string | null
+}
+
+/** Lahat ng released na bill (staff/admin read-only view) — kasama ang pangalan ng homeowner. */
+export async function fetchAllBills(): Promise<BillListRow[]> {
   const { data, error } = await supabase
     .from('bills')
-    .select('*, cycle:billing_cycles(code), property:properties(block, lot)')
+    .select(
+      '*, cycle:billing_cycles(code), property:properties(block, lot, owners:property_owners(end_date, profile:profiles(full_name, avatar_url)))',
+    )
     .neq('status', 'draft')
     .order('created_at', { ascending: false })
   if (error) throw error
-  return (data ?? []) as unknown as (Bill & {
-    cycle: { code: string } | null
-    property: { block: string; lot: string } | null
-  })[]
+  return (
+    (data ?? []) as unknown as (Bill & {
+      cycle: { code: string } | null
+      property: {
+        block: string
+        lot: string
+        owners: {
+          end_date: string | null
+          profile: { full_name: string; avatar_url: string | null } | null
+        }[]
+      } | null
+    })[]
+  ).map((b) => {
+    // Kasalukuyang may-ari = walang end_date (hindi pa lumipat/umalis).
+    const owner = b.property?.owners?.find((o) => !o.end_date)?.profile ?? null
+    return {
+      ...b,
+      property: b.property ? { block: b.property.block, lot: b.property.lot } : null,
+      ownerName: owner?.full_name ?? null,
+      ownerAvatar: owner?.avatar_url ?? null,
+    }
+  })
 }
 
 export async function voidBill(id: string, reason: string): Promise<void> {
@@ -128,7 +153,9 @@ export async function fetchMyBills(): Promise<
 export async function fetchBill(id: string): Promise<BillWithRelations | null> {
   const { data, error } = await supabase
     .from('bills')
-    .select('*, items:bill_items(*), cycle:billing_cycles(code), property:properties(block, lot)')
+    .select(
+      '*, items:bill_items(*), cycle:billing_cycles(code), property:properties(block, lot, owners:property_owners(end_date, profile:profiles(full_name, avatar_url)))',
+    )
     .eq('id', id)
     .maybeSingle()
   if (error) throw error

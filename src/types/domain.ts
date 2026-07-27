@@ -207,7 +207,14 @@ export interface BillItem {
 export interface BillWithRelations extends Bill {
   items: BillItem[]
   cycle: { code: string } | null
-  property: Pick<Property, 'block' | 'lot'> | null
+  property:
+    | (Pick<Property, 'block' | 'lot'> & {
+        owners?: {
+          end_date: string | null
+          profile: { full_name: string; avatar_url: string | null } | null
+        }[]
+      })
+    | null
 }
 
 // ---- Phase 6: Messaging & Notifications ----------------------------
