@@ -33,12 +33,12 @@ export function AuthShell({
   return (
     <div className="min-h-dvh bg-white lg:grid lg:grid-cols-2">
       {/* ===================== LEFT — branding ===================== */}
-      <aside className="relative hidden overflow-hidden bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:justify-between lg:p-12">
-        {/* Dekorasyon */}
+      <aside className="relative hidden overflow-hidden bg-brand-900 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:justify-between lg:p-12">
+        {/* Dekorasyon — subtle na monochrome texture */}
         <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:44px_44px]" />
-          <div className="absolute -left-16 top-20 size-72 rounded-full bg-water-500/20 blur-3xl" />
-          <div className="absolute -right-10 bottom-24 size-72 rounded-full bg-power-500/20 blur-3xl" />
+          <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:44px_44px]" />
+          <div className="absolute -left-20 top-16 size-72 rounded-full bg-white/[0.04] blur-3xl" />
+          <div className="absolute -right-16 bottom-24 size-72 rounded-full bg-white/[0.03] blur-3xl" />
         </div>
 
         {/* Logo */}

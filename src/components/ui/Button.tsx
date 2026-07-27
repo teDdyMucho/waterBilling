@@ -6,17 +6,22 @@ type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'succe
 type Size = 'sm' | 'md' | 'lg'
 
 const VARIANTS: Record<Variant, string> = {
+  // Solid near-black — pangunahing aksyon
   primary:
-    'bg-gradient-to-b from-brand-600 to-brand-700 text-white shadow-brand ring-1 ring-inset ring-white/10 hover:from-brand-600 hover:to-brand-800 active:to-brand-900 disabled:from-brand-600/50 disabled:to-brand-700/50 disabled:shadow-none',
+    'bg-brand-700 text-white shadow-brand ring-1 ring-inset ring-white/10 hover:bg-brand-600 active:bg-brand-800 disabled:bg-brand-700/50 disabled:shadow-none',
+  // Positive confirm — solid, bahagyang mas madilim
+  success:
+    'bg-brand-800 text-white shadow-raised ring-1 ring-inset ring-white/10 hover:bg-brand-700 active:bg-brand-900 disabled:opacity-50',
+  // Soft gray fill
   secondary:
-    'bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-raised ring-1 ring-inset ring-white/10 hover:to-slate-950 active:to-black',
+    'bg-slate-100 text-slate-900 ring-1 ring-inset ring-slate-200 hover:bg-slate-200 active:bg-slate-300',
+  // Outline sa puti
   outline:
     'border border-slate-300 bg-white text-slate-800 shadow-xs hover:border-slate-400 hover:bg-slate-50 active:bg-slate-100',
-  ghost: 'text-slate-700 hover:bg-slate-100 active:bg-slate-200',
+  ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200',
+  // Destructive — outline na pumupuno ng itim sa hover (may confirm + icon)
   danger:
-    'bg-gradient-to-b from-danger-600 to-danger-700 text-white shadow-raised ring-1 ring-inset ring-white/10 hover:to-danger-700 active:to-danger-700 disabled:opacity-50',
-  success:
-    'bg-gradient-to-b from-success-600 to-success-700 text-white shadow-raised ring-1 ring-inset ring-white/10 hover:to-success-700 active:to-success-700 disabled:opacity-50',
+    'border border-slate-300 bg-white text-slate-900 shadow-xs hover:border-brand-700 hover:bg-brand-700 hover:text-white active:bg-brand-800 disabled:opacity-50',
 }
 
 const SIZES: Record<Size, string> = {

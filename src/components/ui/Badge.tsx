@@ -11,15 +11,23 @@ export type BadgeTone =
   | 'danger'
   | 'info'
 
+/**
+ * Monochrome status badges — pinag-iiba sa fill-shade, border, at weight
+ * (hindi sa kulay), ayon sa premium na monochrome na disenyo:
+ *   • solid dark   = tapos / positive (success, brand, confirmed, paid)
+ *   • outline bold = alerto (danger, overdue, rejected, escalated)
+ *   • light fill   = naghihintay (warning, neutral)
+ *   • medium fill  = ginagawa (info)
+ */
 const TONES: Record<BadgeTone, string> = {
-  neutral: 'bg-slate-100 text-slate-700 ring-slate-200',
-  brand: 'bg-brand-50 text-brand-800 ring-brand-200',
-  water: 'bg-water-50 text-water-700 ring-water-100',
-  power: 'bg-power-50 text-power-700 ring-power-100',
-  success: 'bg-success-50 text-success-700 ring-success-100',
-  warning: 'bg-warning-50 text-warning-700 ring-warning-100',
-  danger: 'bg-danger-50 text-danger-700 ring-danger-100',
-  info: 'bg-info-50 text-info-700 ring-info-100',
+  neutral: 'bg-slate-100 text-slate-600 ring-slate-200',
+  brand: 'bg-brand-800 text-white ring-brand-800',
+  water: 'bg-slate-100 text-slate-700 ring-slate-200',
+  power: 'bg-slate-100 text-slate-700 ring-slate-200',
+  success: 'bg-brand-800 text-white ring-brand-800',
+  warning: 'bg-slate-100 text-slate-700 ring-slate-300',
+  danger: 'bg-white text-brand-800 ring-brand-700 font-semibold',
+  info: 'bg-slate-200 text-slate-800 ring-slate-300',
 }
 
 export function Badge({
@@ -36,7 +44,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset',
+        'inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset',
         TONES[tone],
         className,
       )}

@@ -19,9 +19,9 @@ import { useT } from '@/hooks/useT'
 import { consumption as fmtCons, percentDelta } from '@/lib/format'
 import { cn } from '@/lib/cn'
 
-// Single-hue bawat chart (brand tokens): tubig = cyan, kuryente = amber.
-const WATER = '#0891b2' // water-600
-const ELECTRIC = '#d97706' // power-600
+// Monochrome — dalawang neutral na shade para may subtle na pagkakaiba.
+const WATER = '#27272b' // near-black
+const ELECTRIC = '#56565c' // mid-gray
 
 export default function HomeownerConsumption() {
   const { t } = useT()

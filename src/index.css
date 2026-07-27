@@ -7,54 +7,72 @@
    ============================================================ */
 
 @theme {
-  /* --- Brand --------------------------------------------------
-     Teal  = Tubig (water)
-     Amber = Kuryente (electricity)
-  ------------------------------------------------------------- */
-  --color-brand-50: #f0fdfa;
-  --color-brand-100: #ccfbf1;
-  --color-brand-200: #99f6e4;
-  --color-brand-300: #5eead4;
-  --color-brand-400: #2dd4bf;
-  --color-brand-500: #14b8a6;
-  --color-brand-600: #0d9488;
-  --color-brand-700: #0f766e;
-  --color-brand-800: #115e59;
-  --color-brand-900: #134e4a;
-  --color-brand-950: #042f2e;
+  /* =================================================================
+     PREMIUM MONOCHROME DESIGN SYSTEM
+     Black · white · true-neutral gray. Walang kulay na accent.
+     Ang "kulay" ay dating teal/amber — ngayon ay neutral grayscale.
+     Status ay ipinaparating sa fill-shade + border + icon, hindi kulay.
+     ================================================================= */
 
-  --color-water-50: #ecfeff;
-  --color-water-100: #cffafe;
-  --color-water-500: #06b6d4;
-  --color-water-600: #0891b2;
-  --color-water-700: #0e7490;
+  /* --- True-neutral gray ramp (override ng Tailwind slate) ------ */
+  --color-slate-50: #f8f8f9;
+  --color-slate-100: #f1f1f2;
+  --color-slate-200: #e6e6e8;
+  --color-slate-300: #d6d6d9;
+  --color-slate-400: #a3a3a9;
+  --color-slate-500: #77777d;
+  --color-slate-600: #56565c;
+  --color-slate-700: #3f3f45;
+  --color-slate-800: #27272b;
+  --color-slate-900: #18181b;
+  --color-slate-950: #0b0b0d;
 
-  --color-power-50: #fffbeb;
-  --color-power-100: #fef3c7;
-  --color-power-500: #f59e0b;
-  --color-power-600: #d97706;
-  --color-power-700: #b45309;
+  /* --- Brand = PRIMARY (near-black) ----------------------------- */
+  --color-brand-50: #f4f4f5;
+  --color-brand-100: #ececee;
+  --color-brand-200: #dcdce0;
+  --color-brand-300: #b9b9bf;
+  --color-brand-400: #8a8a90;
+  --color-brand-500: #56565c;
+  --color-brand-600: #27272b;
+  --color-brand-700: #18181b; /* primary */
+  --color-brand-800: #101012;
+  --color-brand-900: #09090b;
+  --color-brand-950: #000000;
 
-  /* --- Semantic ------------------------------------------------ */
-  --color-success-50: #f0fdf4;
-  --color-success-100: #dcfce7;
-  --color-success-600: #16a34a;
-  --color-success-700: #15803d;
+  /* --- Water / Power (metro icons) → neutral gray --------------- */
+  --color-water-50: #f4f4f5;
+  --color-water-100: #ececee;
+  --color-water-500: #56565c;
+  --color-water-600: #3f3f45;
+  --color-water-700: #27272b;
 
-  --color-warning-50: #fffbeb;
-  --color-warning-100: #fef3c7;
-  --color-warning-600: #d97706;
-  --color-warning-700: #b45309;
+  --color-power-50: #f4f4f5;
+  --color-power-100: #ececee;
+  --color-power-500: #56565c;
+  --color-power-600: #3f3f45;
+  --color-power-700: #27272b;
 
-  --color-danger-50: #fef2f2;
-  --color-danger-100: #fee2e2;
-  --color-danger-600: #dc2626;
-  --color-danger-700: #b91c1c;
+  /* --- Semantic → grayscale (differentiate by shade + icon) ----- */
+  --color-success-50: #f3f3f4;
+  --color-success-100: #e4e4e7;
+  --color-success-600: #27272b;
+  --color-success-700: #18181b;
 
-  --color-info-50: #eff6ff;
-  --color-info-100: #dbeafe;
-  --color-info-600: #2563eb;
-  --color-info-700: #1d4ed8;
+  --color-warning-50: #f8f8f9;
+  --color-warning-100: #ededf0;
+  --color-warning-600: #56565c;
+  --color-warning-700: #3f3f45;
+
+  --color-danger-50: #f6f6f7;
+  --color-danger-100: #e9e9ec;
+  --color-danger-600: #27272b;
+  --color-danger-700: #18181b;
+
+  --color-info-50: #f4f4f5;
+  --color-info-100: #e9e9ec;
+  --color-info-600: #3f3f45;
+  --color-info-700: #27272b;
 
   /* --- Typography ---------------------------------------------- */
   --font-sans:
@@ -77,8 +95,9 @@
   --shadow-float:
     0 2px 4px -1px rgb(15 23 42 / 0.06), 0 12px 28px -6px rgb(15 23 42 / 0.16),
     0 24px 48px -12px rgb(15 23 42 / 0.12);
-  --shadow-overlay: 0 10px 40px -8px rgb(15 23 42 / 0.28);
-  --shadow-brand: 0 8px 24px -6px rgb(15 118 110 / 0.35);
+  --shadow-overlay: 0 10px 40px -8px rgb(9 9 11 / 0.22);
+  /* Dating teal glow — ngayon neutral na anino para sa primary buttons */
+  --shadow-brand: 0 6px 18px -6px rgb(9 9 11 / 0.35);
 
   /* --- Motion ---------------------------------------------------- */
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
@@ -205,12 +224,9 @@
     mask-image: linear-gradient(to bottom, black 55%, transparent);
   }
 
-  /* Gradient text para sa accent na salita */
+  /* Accent na salita — solid near-black (walang gradient sa mono system) */
   .text-gradient-brand {
-    background: linear-gradient(135deg, var(--color-brand-600), var(--color-brand-800));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--color-brand-700);
   }
 
   /* Hairline sa ibabaw ng card — pang-glossy na detalye */
