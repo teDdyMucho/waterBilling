@@ -272,3 +272,52 @@ export interface Announcement {
   published_at: string
   created_at: string
 }
+
+// ---- Phase 7: Payments ---------------------------------------------
+
+export type PaymentMethod = 'gcash' | 'maya' | 'bank_transfer' | 'cash'
+export type PaymentStatus = 'submitted' | 'endorsed' | 'confirmed' | 'rejected' | 'voided'
+
+export interface PaymentSettings {
+  id: number
+  gcash_number: string | null
+  gcash_name: string | null
+  maya_number: string | null
+  maya_name: string | null
+  bank_name: string | null
+  bank_account: string | null
+  bank_account_name: string | null
+  qr_path: string | null
+  instructions: string | null
+  updated_at: string
+}
+
+export interface Payment {
+  id: string
+  payment_no: string
+  bill_id: string | null
+  property_id: string | null
+  submitted_by: string
+  amount: number
+  method: PaymentMethod
+  reference_number: string | null
+  payment_date: string
+  proof_path: string | null
+  status: PaymentStatus
+  endorsed_by: string | null
+  endorsed_at: string | null
+  endorse_remarks: string | null
+  confirmed_by: string | null
+  confirmed_at: string | null
+  rejection_reason: string | null
+  void_reason: string | null
+  official_receipt_no: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** Payment na may bill + submitter info (para sa staff/admin queue). */
+export interface PaymentWithRelations extends Payment {
+  bill: { bill_no: string; total_amount: number; balance: number } | null
+  submitter: { full_name: string; avatar_url: string | null } | null
+}

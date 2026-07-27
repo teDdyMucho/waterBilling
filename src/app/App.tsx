@@ -24,8 +24,12 @@ import { HomeownerBills, HomeownerBillDetail } from '@/pages/portal/HomeownerBil
 const HomeownerConsumption = lazy(() => import('@/pages/portal/HomeownerConsumption'))
 import HomeownerProfile from '@/pages/portal/HomeownerProfile'
 import HomeownerMessages from '@/pages/portal/HomeownerMessages'
+import HomeownerPay from '@/pages/portal/HomeownerPay'
+import HomeownerPayments from '@/pages/portal/HomeownerPayments'
 import AdminRates from '@/pages/portal/AdminRates'
+import AdminPaymentSettings from '@/pages/portal/AdminPaymentSettings'
 import { StaffConcerns, AdminConcerns } from '@/pages/portal/StaffConcerns'
+import { StaffPayments, AdminPayments } from '@/pages/portal/PaymentQueue'
 import StaffHome from '@/pages/portal/StaffHome'
 import AdminHome from '@/pages/portal/AdminHome'
 import AdminAccounts from '@/pages/portal/AdminAccounts'
@@ -87,6 +91,8 @@ export default function App() {
                   <Route path="/dashboard/profile" element={<HomeownerProfile />} />
                   <Route path="/dashboard/messages" element={<HomeownerMessages />} />
                   <Route path="/dashboard/messages/:id" element={<HomeownerMessages />} />
+                  <Route path="/dashboard/payments" element={<HomeownerPayments />} />
+                  <Route path="/dashboard/pay/:billId" element={<HomeownerPay />} />
                 </Route>
                 <Route element={<RoleGuard allow={['staff']} />}>
                   <Route path="/staff" element={<StaffHome />} />
@@ -95,6 +101,7 @@ export default function App() {
                   <Route path="/staff/readings" element={<StaffWorklist />} />
                   <Route path="/staff/concerns" element={<StaffConcerns />} />
                   <Route path="/staff/concerns/:id" element={<StaffConcerns />} />
+                  <Route path="/staff/payments" element={<StaffPayments />} />
                 </Route>
                 <Route element={<RoleGuard allow={['admin']} />}>
                   <Route path="/admin" element={<AdminHome />} />
@@ -106,6 +113,8 @@ export default function App() {
                   <Route path="/admin/rates" element={<AdminRates />} />
                   <Route path="/admin/concerns" element={<AdminConcerns />} />
                   <Route path="/admin/concerns/:id" element={<AdminConcerns />} />
+                  <Route path="/admin/payments" element={<AdminPayments />} />
+                  <Route path="/admin/payment-settings" element={<AdminPaymentSettings />} />
                 </Route>
               </Route>
 

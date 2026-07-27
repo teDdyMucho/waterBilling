@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, ChevronRight, Droplets, Receipt, Zap } from 'lucide-react'
+import { ArrowLeft, ChevronRight, CreditCard, Droplets, Receipt, Zap } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
 import { fetchBill, fetchMyBills } from '@/features/billing/billing-api'
 import { fetchReadingPhotoPath, getSignedPhotoUrl } from '@/features/readings/readings-api'
@@ -179,9 +179,16 @@ export function HomeownerBillDetail() {
             }
           />
 
-          {/* Pay CTA (Phase 7) */}
-          {bill.balance > 0 && (
-            <Alert tone="info">{t('billing.paySoon')}</Alert>
+          {/* Pay CTA */}
+          {bill.balance > 0 && bill.status !== 'payment_pending' && (
+            <Link to={`/dashboard/pay/${bill.id}`}>
+              <Button block size="lg" iconLeft={<CreditCard className="size-4" />}>
+                {t('billing.payNow')}
+              </Button>
+            </Link>
+          )}
+          {bill.status === 'payment_pending' && (
+            <Alert tone="info">{t('payments.tl_submitted')}</Alert>
           )}
         </div>
       )}

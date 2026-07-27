@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { AlertTriangle, ArrowRight, CalendarClock, CreditCard, Receipt } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CalendarClock, Receipt } from 'lucide-react'
 import { AppShell } from '@/components/AppShell'
 import { WelcomeBanner } from '@/components/WelcomeBanner'
-import { FeaturePreviewGrid } from '@/components/FeaturePreviewGrid'
 import { MyPropertyCard } from '@/features/properties/MyPropertyCard'
 import { fetchAmountDue } from '@/features/billing/billing-api'
 import { Card, CardBody } from '@/components/ui/Card'
@@ -82,18 +81,6 @@ export default function HomeownerHome() {
 
       {/* Lote at metro + konsumo */}
       <MyPropertyCard />
-
-      {/* Mga darating na feature */}
-      <FeaturePreviewGrid
-        items={[
-          {
-            icon: CreditCard,
-            title: t('sidebar.payments'),
-            desc: 'Magbayad online at i-upload ang resibo.',
-            tint: 'success',
-          },
-        ]}
-      />
     </AppShell>
   )
 }
