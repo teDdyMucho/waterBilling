@@ -323,6 +323,14 @@
     "main": "Main",
     "manage": "Manage"
   },
+  "home": {
+    "toPay": "To pay this month",
+    "dueOn": "Due {date}",
+    "daysLeft": "{n} days left",
+    "dueToday": "Due today",
+    "overdue": "Overdue · was due {date}",
+    "nothingDue": "You're all paid up — nothing due right now."
+  },
   "portal": {
     "welcome": "Welcome",
     "homeownerHome": "Homeowner Dashboard",

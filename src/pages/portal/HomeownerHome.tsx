@@ -1,21 +1,40 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { ArrowRight, CreditCard, MessageSquare, Receipt } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CalendarClock, CreditCard, MessageSquare, Receipt } from 'lucide-react'
 import { AppShell } from '@/components/AppShell'
 import { WelcomeBanner } from '@/components/WelcomeBanner'
 import { FeaturePreviewGrid } from '@/components/FeaturePreviewGrid'
 import { MyPropertyCard } from '@/features/properties/MyPropertyCard'
-import { fetchMyBalance } from '@/features/billing/billing-api'
+import { fetchAmountDue } from '@/features/billing/billing-api'
 import { Card, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/hooks/useAuth'
 import { useT } from '@/hooks/useT'
-import { lotLabel, money } from '@/lib/format'
+import { daysUntil, longDate, lotLabel, money } from '@/lib/format'
+import { cn } from '@/lib/cn'
 
 export default function HomeownerHome() {
   const { t } = useT()
   const { profile } = useAuth()
-  const { data: balance } = useQuery({ queryKey: ['my-balance'], queryFn: fetchMyBalance })
+  const { data: due } = useQuery({ queryKey: ['my-amount-due'], queryFn: fetchAmountDue })
+
+  const total = due?.total ?? 0
+  const dueDate = due?.dueDate ?? null
+  const days = dueDate ? daysUntil(dueDate) : null
+  const isOverdue = Boolean(due?.overdue) || (days != null && days < 0)
+  const nothing = total <= 0
+
+  // Sub-line na nagpapakita ng petsa/countdown
+  let subLine = t('home.nothingDue')
+  if (!nothing && dueDate) {
+    if (isOverdue) subLine = t('home.overdue').replace('{date}', longDate(dueDate))
+    else if (days === 0) subLine = t('home.dueToday')
+    else if (days != null)
+      subLine =
+        t('home.dueOn').replace('{date}', longDate(dueDate)) +
+        ' · ' +
+        t('home.daysLeft').replace('{n}', String(days))
+  }
 
   return (
     <AppShell>
@@ -25,18 +44,32 @@ export default function HomeownerHome() {
         badge={lotLabel(profile?.block, profile?.lot)}
       />
 
-      {/* Balance card */}
+      {/* Babayaran ngayong buwan */}
       <Card className="mb-6">
         <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-brand-600 text-white shadow-brand">
-              <Receipt className="size-6" />
+            <span
+              className={cn(
+                'grid size-12 shrink-0 place-items-center rounded-xl text-white',
+                isOverdue ? 'bg-danger-600 shadow-[0_8px_24px_-6px_rgb(220_38_38/0.4)]' : 'bg-brand-600 shadow-brand',
+              )}
+            >
+              {isOverdue ? <AlertTriangle className="size-6" /> : <Receipt className="size-6" />}
             </span>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                {t('billing.balance')}
+                {t('home.toPay')}
               </p>
-              <p className="tabular text-3xl font-bold text-slate-900">{money(balance ?? 0)}</p>
+              <p className="tabular text-3xl font-bold text-slate-900">{money(total)}</p>
+              <p
+                className={cn(
+                  'mt-0.5 flex items-center gap-1.5 text-sm',
+                  isOverdue ? 'font-medium text-danger-600' : 'text-slate-500',
+                )}
+              >
+                {!nothing && <CalendarClock className="size-3.5 shrink-0" />}
+                {subLine}
+              </p>
             </div>
           </div>
           <Link to="/dashboard/bills" className="shrink-0">

@@ -323,6 +323,14 @@
     "main": "Pangunahin",
     "manage": "Pamahalaan"
   },
+  "home": {
+    "toPay": "Babayaran ngayong buwan",
+    "dueOn": "Bayaran bago ang {date}",
+    "daysLeft": "{n} araw na lang",
+    "dueToday": "Bayaran ngayong araw",
+    "overdue": "Lampas na sa due date · {date}",
+    "nothingDue": "Wala kang babayaran ngayon — bayad na lahat."
+  },
   "portal": {
     "welcome": "Maligayang pagdating",
     "homeownerHome": "Dashboard ng Homeowner",

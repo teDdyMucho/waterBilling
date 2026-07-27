@@ -128,3 +128,24 @@ export async function fetchMyBalance(): Promise<number> {
   if (error) throw error
   return (data ?? []).reduce((sum, b) => sum + Number((b as { balance: number }).balance), 0)
 }
+
+/** Babayaran ngayong buwan: kabuuang balanse + pinakamalapit na due date. */
+export async function fetchAmountDue(): Promise<{
+  total: number
+  dueDate: string | null
+  overdue: boolean
+}> {
+  const { data, error } = await supabase
+    .from('bills')
+    .select('balance, due_date, status')
+    .in('status', ['unpaid', 'partially_paid', 'overdue', 'payment_pending'])
+  if (error) throw error
+  const rows = (data ?? []) as { balance: number; due_date: string | null; status: string }[]
+  const total = rows.reduce((s, b) => s + Number(b.balance), 0)
+  const dueDates = rows.map((b) => b.due_date).filter((d): d is string => Boolean(d)).sort()
+  return {
+    total,
+    dueDate: dueDates[0] ?? null,
+    overdue: rows.some((b) => b.status === 'overdue'),
+  }
+}
