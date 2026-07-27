@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { ChevronRight, MessageSquare } from 'lucide-react'
+import { ChevronRight, MessageSquare, Search } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
 import { MessageThreadView } from '@/features/messaging/MessageThreadView'
 import { fetchAllThreads } from '@/features/messaging/messaging-api'
 import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -30,18 +31,29 @@ export function ConcernsInbox({ base }: { base: string }) {
   const { t } = useT()
   const { id } = useParams()
   const [filter, setFilter] = useState<Filter>('all')
+  const [search, setSearch] = useState('')
 
   const { data, isLoading } = useQuery({ queryKey: ['threads'], queryFn: fetchAllThreads })
   const threads = data ?? []
 
   const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
     return threads.filter((th) => {
-      if (filter === 'open') return th.status === 'open' || th.status === 'in_progress'
-      if (filter === 'escalated') return th.status === 'escalated'
-      if (filter === 'resolved') return th.status === 'resolved' || th.status === 'closed'
-      return true
+      const statusOk =
+        filter === 'open'
+          ? th.status === 'open' || th.status === 'in_progress'
+          : filter === 'escalated'
+            ? th.status === 'escalated'
+            : filter === 'resolved'
+              ? th.status === 'resolved' || th.status === 'closed'
+              : true
+      if (!statusOk) return false
+      if (!q) return true
+      return `${th.subject} ${th.opener?.full_name ?? ''} ${t(`messaging.cat_${th.category}`)}`
+        .toLowerCase()
+        .includes(q)
     })
-  }, [threads, filter])
+  }, [threads, filter, search, t])
 
   if (id) {
     return (
@@ -56,6 +68,15 @@ export function ConcernsInbox({ base }: { base: string }) {
   return (
     <AppShell>
       <PageHeader title={t('messaging.inboxTitle')} description={t('messaging.inboxSub')} />
+
+      <div className="mb-3 sm:max-w-xs">
+        <Input
+          placeholder={t('messaging.search')}
+          iconLeft={<Search className="size-4" />}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
       <div className="mb-4 flex flex-wrap gap-1.5">
         {filters.map((f) => (

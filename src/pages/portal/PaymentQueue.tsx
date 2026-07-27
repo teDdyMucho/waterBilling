@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Image as ImageIcon, ShieldCheck, X } from 'lucide-react'
+import { Check, Image as ImageIcon, Search, ShieldCheck, X } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
 import {
   confirmPayment,
@@ -11,6 +11,7 @@ import {
 } from '@/features/payments/payments-api'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Avatar } from '@/components/ui/Avatar'
 import { Modal } from '@/components/ui/Modal'
@@ -35,6 +36,7 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
   const [proof, setProof] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
 
   const statuses: PaymentStatus[] = mode === 'staff' ? ['submitted'] : ['submitted', 'endorsed']
   const { data, isLoading } = useQuery({
@@ -80,7 +82,17 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
     }
   }
 
-  const rows = data ?? []
+  const allRows = data ?? []
+  const q = search.trim().toLowerCase()
+  const rows = q
+    ? allRows.filter((p) =>
+        `${p.submitter?.full_name ?? ''} ${p.payment_no} ${p.amount} ${t(`payments.m_${p.method}`)} ${
+          p.reference_number ?? ''
+        } ${p.bill?.bill_no ?? ''}`
+          .toLowerCase()
+          .includes(q),
+      )
+    : allRows
   const busy = mEndorse.isPending || mConfirm.isPending || mReject.isPending
 
   return (
@@ -100,6 +112,15 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
           {error}
         </Alert>
       )}
+
+      <div className="mb-4 sm:max-w-xs">
+        <Input
+          placeholder={t('payments.search')}
+          iconLeft={<Search className="size-4" />}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
       <Card>
         {isLoading ? (

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, ChevronDown, ChevronRight, Droplets, Receipt, Search, Zap } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, ChevronDown, ChevronRight, Droplets, Receipt, Search, Zap } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
 import { fetchAllBills, fetchBillsForProperty } from '@/features/billing/billing-api'
 import { Card, CardBody } from '@/components/ui/Card'
@@ -163,6 +163,7 @@ function BillsDirectory() {
 function HomeownerBillHistory({ propertyId }: { propertyId: string }) {
   const { t } = useT()
   const [openId, setOpenId] = useState<string | null>(null)
+  const [histSearch, setHistSearch] = useState('')
   const { data, isLoading } = useQuery({
     queryKey: ['property-bills', propertyId],
     queryFn: () => fetchBillsForProperty(propertyId),
@@ -176,6 +177,10 @@ function HomeownerBillHistory({ propertyId }: { propertyId: string }) {
   const outstanding = bills
     .filter((b) => OPEN_STATUSES.includes(b.status))
     .reduce((sum, b) => sum + Number(b.balance), 0)
+  const q = histSearch.trim().toLowerCase()
+  const shownBills = q
+    ? bills.filter((b) => `${cycleLabel(b.cycle?.code)} ${b.bill_no}`.toLowerCase().includes(q))
+    : bills
 
   return (
     <AppShell>
@@ -213,7 +218,17 @@ function HomeownerBillHistory({ propertyId }: { propertyId: string }) {
         {/* History list */}
         <div>
           <h2 className="mb-2 px-1 text-sm font-semibold text-slate-700">{t('billing.billHistory')}</h2>
-          {bills.length === 0 ? (
+          {bills.length > 0 && (
+            <div className="mb-3">
+              <Input
+                placeholder={t('billing.searchHistory')}
+                iconLeft={<Search className="size-4" />}
+                value={histSearch}
+                onChange={(e) => setHistSearch(e.target.value)}
+              />
+            </div>
+          )}
+          {shownBills.length === 0 ? (
             <Card>
               <div className="p-5">
                 <EmptyState icon={<Receipt className="size-6" />} title={t('billing.noMyBills')} />
@@ -221,7 +236,7 @@ function HomeownerBillHistory({ propertyId }: { propertyId: string }) {
             </Card>
           ) : (
             <ul className="space-y-2">
-              {bills.map((bill) => (
+              {shownBills.map((bill) => (
                 <BillHistoryRow
                   key={bill.id}
                   bill={bill}
@@ -265,8 +280,14 @@ function BillHistoryRow({
             <p className="truncate text-xs text-slate-500">
               {bill.bill_no} · {t('billing.dueDate')}: {shortDate(bill.due_date)}
             </p>
+            {bill.penalty_amount > 0 && (
+              <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700 ring-1 ring-inset ring-red-200">
+                <AlertTriangle className="size-3" />
+                {t('billing.penaltyTag')}
+              </span>
+            )}
           </div>
-          <div className="text-right">
+          <div className="flex flex-col items-end gap-1">
             <p className="tabular font-semibold text-slate-900">{money(bill.total_amount)}</p>
             <Badge tone={TONE[bill.status]}>{t(`billing.st_${bill.status}`)}</Badge>
           </div>
@@ -285,29 +306,44 @@ function BillHistoryRow({
               {bill.items
                 ?.slice()
                 .sort((a, b) => itemOrder(a.item_type) - itemOrder(b.item_type))
-                .map((it) => (
-                  <div
-                    key={it.id}
-                    className="flex items-center justify-between gap-3 border-b border-slate-100 py-2 last:border-0"
-                  >
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      {it.item_type === 'water' && <Droplets className="size-4 text-slate-500" />}
-                      {it.item_type === 'electric' && <Zap className="size-4 text-slate-500" />}
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-slate-900">
-                          {it.description ?? it.item_type}
-                        </p>
-                        {it.quantity != null && it.unit_price != null && (
-                          <p className="text-xs text-slate-500">
-                            {fmtCons(it.quantity, it.item_type === 'water' ? 'water' : 'electric')} ×{' '}
-                            {money(it.unit_price)}
+                .map((it) => {
+                  const isPenalty = it.item_type === 'penalty'
+                  return (
+                    <div
+                      key={it.id}
+                      className="flex items-center justify-between gap-3 border-b border-slate-100 py-2 last:border-0"
+                    >
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        {it.item_type === 'water' && <Droplets className="size-4 text-slate-500" />}
+                        {it.item_type === 'electric' && <Zap className="size-4 text-slate-500" />}
+                        {isPenalty && <AlertTriangle className="size-4 shrink-0 text-red-600" />}
+                        <div className="min-w-0">
+                          <p
+                            className={`text-sm font-medium ${isPenalty ? 'text-red-700' : 'text-slate-900'}`}
+                          >
+                            {it.description ?? it.item_type}
                           </p>
-                        )}
+                          {isPenalty ? (
+                            <p className="text-xs text-red-600">{t('billing.penaltyNote')}</p>
+                          ) : (
+                            it.quantity != null &&
+                            it.unit_price != null && (
+                              <p className="text-xs text-slate-500">
+                                {fmtCons(it.quantity, it.item_type === 'water' ? 'water' : 'electric')}{' '}
+                                × {money(it.unit_price)}
+                              </p>
+                            )
+                          )}
+                        </div>
                       </div>
+                      <p
+                        className={`tabular text-sm font-semibold ${isPenalty ? 'text-red-700' : 'text-slate-900'}`}
+                      >
+                        {money(it.amount)}
+                      </p>
                     </div>
-                    <p className="tabular text-sm font-semibold text-slate-900">{money(it.amount)}</p>
-                  </div>
-                ))}
+                  )
+                })}
             </div>
 
             <div className="mt-3 space-y-1.5 border-t border-slate-200 pt-3">
