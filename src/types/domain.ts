@@ -14,6 +14,7 @@ export interface Profile {
   block: string | null
   lot: string | null
   zone: string | null
+  avatar_url: string | null
   preferred_language: Language
   rejection_reason: string | null
   approved_by: string | null
@@ -246,7 +247,7 @@ export interface ThreadMessage {
 
 /** Thread na may kasamang pangalan ng nag-open (para sa inbox). */
 export interface ThreadWithOpener extends MessageThread {
-  opener: { full_name: string } | null
+  opener: { full_name: string; avatar_url: string | null } | null
 }
 
 export interface AppNotification {

@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowUpRight,
   CheckCircle2,
+  Headset,
   Lock,
   Paperclip,
   Send,
@@ -23,10 +24,11 @@ import { supabase } from '@/lib/supabase'
 import { Card, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
+import { Avatar } from '@/components/ui/Avatar'
 import { PageLoader } from '@/components/ui/Spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useT } from '@/hooks/useT'
-import { dateTime, initials } from '@/lib/format'
+import { dateTime } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { Attachment, ThreadMessage, ThreadStatus } from '@/types/domain'
 
@@ -125,8 +127,8 @@ export function MessageThreadView({ threadId, backTo }: { threadId: string; back
         {t('messaging.back')}
       </Link>
 
-      {/* Header */}
-      <Card className="mb-4">
+      {/* Header — naka-fix (sticky) sa taas kapag nag-scroll */}
+      <Card className="sticky top-16 z-20 mb-4 shadow-sm">
         <CardBody>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
@@ -178,9 +180,18 @@ export function MessageThreadView({ threadId, backTo }: { threadId: string; back
       </Card>
 
       {/* Messages */}
-      <div className="space-y-3">
+      <div className="space-y-3 pt-1">
         {(messages ?? []).map((m) => (
-          <MessageBubble key={m.id} message={m} mine={m.sender_id === user?.id} />
+          <MessageBubble
+            key={m.id}
+            message={m}
+            mine={m.sender_id === user?.id}
+            openerId={thread.opened_by}
+            openerName={thread.opener?.full_name ?? null}
+            openerAvatar={thread.opener?.avatar_url ?? null}
+            myName={profile?.full_name ?? null}
+            myAvatar={profile?.avatar_url ?? null}
+          />
         ))}
         <div ref={endRef} />
       </div>
@@ -251,18 +262,49 @@ export function MessageThreadView({ threadId, backTo }: { threadId: string; back
   )
 }
 
-function MessageBubble({ message: m, mine }: { message: ThreadMessage; mine: boolean }) {
+function MessageBubble({
+  message: m,
+  mine,
+  openerId,
+  openerName,
+  openerAvatar,
+  myName,
+  myAvatar,
+}: {
+  message: ThreadMessage
+  mine: boolean
+  openerId: string
+  openerName: string | null
+  openerAvatar: string | null
+  myName: string | null
+  myAvatar: string | null
+}) {
   const { t } = useT()
+  const fromHomeowner = m.sender_id === openerId
+
+  // Avatar: IMAGE kung meron, else initials. Headset kung galing sa opisina.
+  let avatarEl
+  if (m.is_internal_note) {
+    avatarEl = (
+      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-warning-600 text-white">
+        <Lock className="size-3.5" />
+      </span>
+    )
+  } else if (mine) {
+    avatarEl = <Avatar url={myAvatar} name={myName} size="sm" className="bg-brand-700" />
+  } else if (fromHomeowner) {
+    avatarEl = <Avatar url={openerAvatar} name={openerName} size="sm" className="bg-slate-400" />
+  } else {
+    avatarEl = (
+      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-600 text-white">
+        <Headset className="size-4" />
+      </span>
+    )
+  }
+
   return (
     <div className={cn('flex gap-2.5', mine && 'flex-row-reverse')}>
-      <span
-        className={cn(
-          'grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold text-white',
-          m.is_internal_note ? 'bg-warning-600' : mine ? 'bg-brand-700' : 'bg-slate-400',
-        )}
-      >
-        {m.is_internal_note ? <Lock className="size-3.5" /> : initials('U')}
-      </span>
+      {avatarEl}
       <div className={cn('min-w-0 max-w-[80%]', mine && 'items-end text-right')}>
         <div
           className={cn(

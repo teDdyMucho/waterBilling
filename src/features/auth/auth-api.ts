@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { compressImage } from '@/lib/image'
 import type { Language, Profile } from '@/types/domain'
 
 export interface RegisterInput {
@@ -60,13 +61,34 @@ export async function updatePassword(newPassword: string) {
   if (error) throw error
 }
 
-/** Ina-update ng user ang sariling profile (name/contact/language lang). */
+/** Ina-update ng user ang sariling profile (name/contact/language/avatar). */
 export async function updateMyProfile(
   userId: string,
-  input: { full_name?: string; contact_number?: string; preferred_language?: string },
+  input: {
+    full_name?: string
+    contact_number?: string
+    preferred_language?: string
+    avatar_url?: string | null
+  },
 ): Promise<void> {
   const { error } = await supabase.from('profiles').update(input).eq('id', userId)
   if (error) throw error
+}
+
+/**
+ * I-upload ang avatar (compressed) sa public na avatars bucket, tapos
+ * i-save ang public URL sa profile. Ibinabalik ang URL.
+ */
+export async function uploadAvatar(userId: string, file: File): Promise<string> {
+  const blob = await compressImage(file, { maxDim: 512, quality: 0.8 })
+  const path = `${userId}/${crypto.randomUUID()}.jpg`
+  const { error } = await supabase.storage
+    .from('avatars')
+    .upload(path, blob, { contentType: 'image/jpeg', upsert: true })
+  if (error) throw error
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+  await updateMyProfile(userId, { avatar_url: data.publicUrl })
+  return data.publicUrl
 }
 
 /** Kinukuha ang profile row ng kasalukuyang user (o null kung wala pa). */

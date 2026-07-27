@@ -1,8 +1,9 @@
-import { useState, type FormEvent } from 'react'
-import { Mail, MapPin, Phone, User } from 'lucide-react'
+import { useRef, useState, type FormEvent } from 'react'
+import { Camera, Mail, MapPin, Phone, User } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
-import { updateMyProfile, updatePassword } from '@/features/auth/auth-api'
+import { updateMyProfile, updatePassword, uploadAvatar } from '@/features/auth/auth-api'
 import { Card, CardHeader, CardBody } from '@/components/ui/Card'
+import { Avatar } from '@/components/ui/Avatar'
 import { Input } from '@/components/ui/Input'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import { Select } from '@/components/ui/Field'
@@ -30,6 +31,24 @@ export default function HomeownerProfile() {
   const [savingPw, setSavingPw] = useState(false)
   const [pwMsg, setPwMsg] = useState<string | null>(null)
   const [pwErr, setPwErr] = useState<string | null>(null)
+
+  const avatarRef = useRef<HTMLInputElement>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+
+  async function onAvatarPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+    setProfileErr(null)
+    setUploadingAvatar(true)
+    try {
+      await uploadAvatar(user.id, file)
+      await refreshProfile()
+    } catch {
+      setProfileErr(t('common.somethingWrong'))
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
 
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -85,6 +104,41 @@ export default function HomeownerProfile() {
             <form onSubmit={saveProfile} className="space-y-4">
               {profileErr && <Alert tone="danger">{profileErr}</Alert>}
               {profileMsg && <Alert tone="success">{profileMsg}</Alert>}
+
+              {/* Avatar upload */}
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <Avatar url={profile?.avatar_url} name={profile?.full_name} size="xl" />
+                  <button
+                    type="button"
+                    onClick={() => avatarRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-full bg-brand-700 text-white ring-2 ring-white transition-colors hover:bg-brand-800"
+                    aria-label={t('profile.changePhoto')}
+                  >
+                    <Camera className="size-3.5" />
+                  </button>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-700">{t('profile.photo')}</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-1.5"
+                    loading={uploadingAvatar}
+                    onClick={() => avatarRef.current?.click()}
+                  >
+                    {t('profile.changePhoto')}
+                  </Button>
+                  <input
+                    ref={avatarRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={onAvatarPick}
+                  />
+                </div>
+              </div>
 
               <Input
                 label={t('profile.fullName')}

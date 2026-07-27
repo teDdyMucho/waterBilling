@@ -168,6 +168,8 @@
   "profile": {
     "title": "Profile",
     "sub": "Ang contact details at password mo.",
+    "photo": "Larawan sa profile",
+    "changePhoto": "Palitan ang larawan",
     "fullName": "Buong pangalan",
     "contact": "Numero",
     "language": "Wikang gustong gamitin",

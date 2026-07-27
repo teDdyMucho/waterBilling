@@ -26,7 +26,7 @@ export async function fetchMyThreads(): Promise<MessageThread[]> {
 export async function fetchAllThreads(): Promise<ThreadWithOpener[]> {
   const { data, error } = await supabase
     .from('message_threads')
-    .select('*, opener:profiles!message_threads_opened_by_fkey(full_name)')
+    .select('*, opener:profiles!message_threads_opened_by_fkey(full_name, avatar_url)')
     .order('last_message_at', { ascending: false })
   if (error) throw error
   return (data ?? []) as unknown as ThreadWithOpener[]
@@ -35,7 +35,7 @@ export async function fetchAllThreads(): Promise<ThreadWithOpener[]> {
 export async function fetchThread(id: string): Promise<ThreadWithOpener | null> {
   const { data, error } = await supabase
     .from('message_threads')
-    .select('*, opener:profiles!message_threads_opened_by_fkey(full_name)')
+    .select('*, opener:profiles!message_threads_opened_by_fkey(full_name, avatar_url)')
     .eq('id', id)
     .maybeSingle()
   if (error) throw error

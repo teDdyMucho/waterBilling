@@ -5,10 +5,10 @@ import { Logo, LogoMark } from '@/components/Logo'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { NotificationBell } from '@/components/NotificationBell'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
+import { Avatar } from '@/components/ui/Avatar'
 import { NAV_BY_ROLE, type NavGroup } from '@/components/nav-config'
 import { useAuth } from '@/hooks/useAuth'
 import { useT } from '@/hooks/useT'
-import { initials } from '@/lib/format'
 import type { Role } from '@/types/domain'
 import { cn } from '@/lib/cn'
 
@@ -140,9 +140,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     return (
       <div className="shrink-0 border-t border-slate-100 p-3">
         <div className="flex items-center gap-3 px-2 py-1.5">
-          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-sm font-semibold text-white shadow-sm">
-            {initials(profile?.full_name)}
-          </span>
+          <Avatar url={profile?.avatar_url} name={profile?.full_name} size="md" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-slate-900">
               {profile?.full_name}

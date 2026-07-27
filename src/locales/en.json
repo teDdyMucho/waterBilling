@@ -168,6 +168,8 @@
   "profile": {
     "title": "Profile",
     "sub": "Your contact details and password.",
+    "photo": "Profile photo",
+    "changePhoto": "Change photo",
     "fullName": "Full name",
     "contact": "Contact number",
     "language": "Preferred language",
