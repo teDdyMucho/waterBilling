@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PageLoader } from '@/components/ui/Spinner'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { I18nProvider } from '@/i18n/I18nProvider'
 import { AuthProvider } from '@/features/auth/AuthProvider'
 import {
@@ -28,6 +29,8 @@ import HomeownerPay from '@/pages/portal/HomeownerPay'
 import HomeownerPayments from '@/pages/portal/HomeownerPayments'
 import AdminRates from '@/pages/portal/AdminRates'
 import AdminPaymentSettings from '@/pages/portal/AdminPaymentSettings'
+import AdminReports from '@/pages/portal/AdminReports'
+import AdminAudit from '@/pages/portal/AdminAudit'
 import { StaffConcerns, AdminConcerns } from '@/pages/portal/StaffConcerns'
 import { StaffPayments, AdminPayments } from '@/pages/portal/PaymentQueue'
 import StaffHome from '@/pages/portal/StaffHome'
@@ -48,10 +51,11 @@ const queryClient = new QueryClient({
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <I18nProvider>
-        <AuthProvider>
-          <BrowserRouter>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <I18nProvider>
+          <AuthProvider>
+            <BrowserRouter>
             <Routes>
               {/* Public */}
               <Route path="/" element={<LandingPage />} />
@@ -115,14 +119,17 @@ export default function App() {
                   <Route path="/admin/concerns/:id" element={<AdminConcerns />} />
                   <Route path="/admin/payments" element={<AdminPayments />} />
                   <Route path="/admin/payment-settings" element={<AdminPaymentSettings />} />
+                  <Route path="/admin/reports" element={<AdminReports />} />
+                  <Route path="/admin/audit" element={<AdminAudit />} />
                 </Route>
               </Route>
 
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </BrowserRouter>
-        </AuthProvider>
-      </I18nProvider>
-    </QueryClientProvider>
+          </AuthProvider>
+        </I18nProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }

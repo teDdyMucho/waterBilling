@@ -81,7 +81,9 @@ docs/           PRD.md · PHASES.md
 - [x] **Phase 2** — Master data — properties, meters, homeowner linking (+ CSV import, staff zones, meter replacement)
 - [x] **Phase 3** — Meter reading + required photo — worklist, anomaly detection, verify/reject
 - [x] **Phase 4** — Billing engine — effective-dated rates, bill generation, penalties
-- [ ] **Phase 5** — Homeowner portal
-- [ ] **Phase 6** — Messaging & notifications
-- [ ] **Phase 7** — 💰 Payment (submit → endorse → confirm)
-- [ ] **Phase 8** — Reports, audit, launch
+- [x] **Phase 5** — Homeowner portal — consumption charts, bill breakdown, meter photos, profile, PWA
+- [x] **Phase 6** — Messaging & notifications — concerns, internal notes, realtime, avatars
+- [x] **Phase 7** — 💰 Payment (submit → endorse → confirm) — QR, required proof, OR numbers, audit
+- [x] **Phase 8** — Reports (collection/aging/payment log + CSV), audit log, dashboard KPIs, launch runbook
+
+**All 9 phases built.** See [docs/LAUNCH.md](docs/LAUNCH.md) for the go-live checklist.
