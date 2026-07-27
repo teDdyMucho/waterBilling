@@ -96,6 +96,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "edit": "Edit",
+    "view": "View",
     "delete": "Delete",
     "required": "This field is required",
     "somethingWrong": "Something went wrong. Please try again."
@@ -321,6 +322,9 @@
 
     "myBillsTitle": "My Bills",
     "myBillsSub": "Your monthly water and electricity charges.",
+    "staffBillsTitle": "Homeowner Bills",
+    "staffBillsSub": "View homeowner bills and balances (read-only).",
+    "searchBills": "Search block, lot, or bill no.…",
     "noMyBills": "No bills yet.",
     "billNo": "Bill no.",
     "dueDate": "Due date",
@@ -415,6 +419,7 @@
     "workspace": "Workspace",
     "accounts": "Account Management",
     "bills": "My Bills",
+    "homeownerBills": "Bills",
     "payments": "Payments",
     "messages": "Messages",
     "consumption": "Consumption",

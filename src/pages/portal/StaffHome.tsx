@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Camera, Receipt } from 'lucide-react'
 import { AppShell } from '@/components/AppShell'
 import { WelcomeBanner } from '@/components/WelcomeBanner'
-import { FeaturePreviewGrid } from '@/components/FeaturePreviewGrid'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/hooks/useAuth'
@@ -20,36 +19,44 @@ export default function StaffHome() {
       />
 
       {/* Live na aksyon */}
-      <div className="mb-6 flex flex-col gap-3 rounded-card border border-brand-200 bg-brand-50/60 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-600 text-white shadow-brand">
-            <Camera className="size-5" />
-          </span>
-          <div>
-            <p className="font-semibold text-slate-900">{t('readings.worklistTitle')}</p>
-            <p className="text-sm text-slate-600">{t('readings.worklistSub')}</p>
+      <div className="mb-6 grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-col gap-3 rounded-card border border-slate-200 bg-slate-50/60 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-700 text-white">
+              <Camera className="size-5" />
+            </span>
+            <div>
+              <p className="font-semibold text-slate-900">{t('readings.worklistTitle')}</p>
+              <p className="text-sm text-slate-600">{t('readings.worklistSub')}</p>
+            </div>
           </div>
+          <Link to="/staff/readings" className="shrink-0">
+            <Button iconRight={<ArrowRight className="size-4" />}>{t('readings.encode')}</Button>
+          </Link>
         </div>
-        <Link to="/staff/readings" className="shrink-0">
-          <Button iconRight={<ArrowRight className="size-4" />}>{t('readings.encode')}</Button>
-        </Link>
+
+        <div className="flex flex-col gap-3 rounded-card border border-slate-200 bg-slate-50/60 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-700 text-white">
+              <Receipt className="size-5" />
+            </span>
+            <div>
+              <p className="font-semibold text-slate-900">{t('billing.staffBillsTitle')}</p>
+              <p className="text-sm text-slate-600">{t('billing.staffBillsSub')}</p>
+            </div>
+          </div>
+          <Link to="/staff/bills" className="shrink-0">
+            <Button variant="outline" iconRight={<ArrowRight className="size-4" />}>
+              {t('common.view')}
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Alert tone="info" className="mb-6">
         Nakikita ng staff ang billing info at concern ng homeowner —
         <strong> hindi ang kanilang account.</strong>
       </Alert>
-
-      <FeaturePreviewGrid
-        items={[
-          {
-            icon: Receipt,
-            title: t('sidebar.bills'),
-            desc: 'Tingnan ang bill at balanse ng homeowner.',
-            tint: 'success',
-          },
-        ]}
-      />
     </AppShell>
   )
 }

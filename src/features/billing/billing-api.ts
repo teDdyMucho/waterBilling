@@ -87,6 +87,22 @@ export async function fetchBillsForCycle(cycleId: string): Promise<
   })[]
 }
 
+/** Lahat ng released na bill (staff/admin read-only view). */
+export async function fetchAllBills(): Promise<
+  (Bill & { cycle: { code: string } | null; property: { block: string; lot: string } | null })[]
+> {
+  const { data, error } = await supabase
+    .from('bills')
+    .select('*, cycle:billing_cycles(code), property:properties(block, lot)')
+    .neq('status', 'draft')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as unknown as (Bill & {
+    cycle: { code: string } | null
+    property: { block: string; lot: string } | null
+  })[]
+}
+
 export async function voidBill(id: string, reason: string): Promise<void> {
   const { error } = await supabase
     .from('bills')

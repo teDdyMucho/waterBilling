@@ -96,6 +96,7 @@
     "cancel": "Kanselahin",
     "save": "I-save",
     "edit": "I-edit",
+    "view": "Tingnan",
     "delete": "Burahin",
     "required": "Kailangan itong sagutan",
     "somethingWrong": "May nangyaring mali. Pakisubukan ulit."
@@ -321,6 +322,9 @@
 
     "myBillsTitle": "Mga Bill Ko",
     "myBillsSub": "Ang buwanang singil mo sa tubig at kuryente.",
+    "staffBillsTitle": "Mga Bill ng Homeowner",
+    "staffBillsSub": "Tingnan ang bill at balanse ng homeowner (read-only).",
+    "searchBills": "Hanapin ang block, lot, o bill no.…",
     "noMyBills": "Wala pang bill.",
     "billNo": "Bill no.",
     "dueDate": "Due date",
@@ -415,6 +419,7 @@
     "workspace": "Workspace",
     "accounts": "Account Management",
     "bills": "Mga Bill Ko",
+    "homeownerBills": "Mga Bill",
     "payments": "Mga Bayad",
     "messages": "Mga Mensahe",
     "consumption": "Konsumo",
