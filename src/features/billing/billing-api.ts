@@ -162,6 +162,37 @@ export async function fetchBill(id: string): Promise<BillWithRelations | null> {
   return (data as unknown as BillWithRelations) ?? null
 }
 
+/**
+ * Buong history ng bill ng isang property (staff/admin read-only).
+ * Kasama ang line items ng bawat bill + pangalan/avatar ng kasalukuyang may-ari.
+ */
+export async function fetchBillsForProperty(propertyId: string): Promise<{
+  owner: { name: string | null; avatar: string | null; block: string | null; lot: string | null }
+  bills: BillWithRelations[]
+}> {
+  const { data, error } = await supabase
+    .from('bills')
+    .select(
+      '*, items:bill_items(*), cycle:billing_cycles(code), property:properties(block, lot, owners:property_owners(end_date, profile:profiles(full_name, avatar_url)))',
+    )
+    .eq('property_id', propertyId)
+    .neq('status', 'draft')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  const bills = (data ?? []) as unknown as BillWithRelations[]
+  const prop = bills[0]?.property ?? null
+  const owner = prop?.owners?.find((o) => !o.end_date)?.profile ?? null
+  return {
+    owner: {
+      name: owner?.full_name ?? null,
+      avatar: owner?.avatar_url ?? null,
+      block: prop?.block ?? null,
+      lot: prop?.lot ?? null,
+    },
+    bills,
+  }
+}
+
 /** Kabuuang balanse ng homeowner (para sa dashboard). */
 export async function fetchMyBalance(): Promise<number> {
   const { data, error } = await supabase
