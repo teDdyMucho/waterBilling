@@ -6,6 +6,7 @@ import { AppShell, PageHeader } from '@/components/AppShell'
 import { MessageThreadView } from '@/features/messaging/MessageThreadView'
 import { fetchAllThreads } from '@/features/messaging/messaging-api'
 import { Card } from '@/components/ui/Card'
+import { Avatar } from '@/components/ui/Avatar'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
@@ -93,9 +94,12 @@ export function ConcernsInbox({ base }: { base: string }) {
                   to={`${base}/${th.id}`}
                   className="flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-slate-50 sm:px-5"
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-100">
-                    <MessageSquare className="size-5" />
-                  </span>
+                  <Avatar
+                    url={th.opener?.avatar_url}
+                    name={th.opener?.full_name}
+                    size="md"
+                    className="size-10 bg-slate-400"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-slate-900">{th.subject}</p>
                     <p className="truncate text-xs text-slate-500">
