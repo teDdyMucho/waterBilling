@@ -9,6 +9,7 @@ import { PasswordInput } from '@/components/ui/PasswordInput'
 import { Select } from '@/components/ui/Field'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
+import { PwaSettingsCard } from '@/features/pwa/PwaSettingsCard'
 import { useAuth } from '@/hooks/useAuth'
 import { useT } from '@/hooks/useT'
 import { lotLabel } from '@/lib/format'
@@ -179,6 +180,9 @@ export default function HomeownerProfile() {
             </form>
           </CardBody>
         </Card>
+
+        {/* App install + notifications (PWA) */}
+        <PwaSettingsCard />
 
         {/* Change password */}
         <Card>

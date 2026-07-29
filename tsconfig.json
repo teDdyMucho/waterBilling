@@ -26,5 +26,8 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  // Ang service worker ay may WebWorker globals — bina-build ito ng
+  // vite-plugin-pwa nang hiwalay, kaya ie-exclude sa app typecheck.
+  "exclude": ["src/sw.ts"]
 }

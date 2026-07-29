@@ -5,6 +5,7 @@ import { PageLoader } from '@/components/ui/Spinner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { I18nProvider } from '@/i18n/I18nProvider'
 import { AuthProvider } from '@/features/auth/AuthProvider'
+import { PwaManager } from '@/features/pwa/PwaManager'
 import {
   PublicOnly,
   RequireAuth,
@@ -56,6 +57,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <I18nProvider>
           <AuthProvider>
+            <PwaManager />
             <BrowserRouter>
             <Routes>
               {/* Public */}
