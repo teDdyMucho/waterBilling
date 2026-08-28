@@ -60,7 +60,6 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
         { to: '/staff/readings', labelKey: 'sidebar.readings', icon: Camera },
         { to: '/staff/bills', labelKey: 'sidebar.homeownerBills', icon: Receipt },
         { to: '/staff/payments', labelKey: 'sidebar.payments', icon: CreditCard },
-        { to: '/staff/payment-guide', labelKey: 'sidebar.paymentGuide', icon: ScrollText },
         { to: '/staff/concerns', labelKey: 'sidebar.concerns', icon: MessageSquare },
       ],
     },
