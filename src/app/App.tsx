@@ -43,6 +43,7 @@ import AdminCycles from '@/pages/portal/AdminCycles'
 import AdminReview from '@/pages/portal/AdminReview'
 import StaffWorklist from '@/pages/portal/StaffWorklist'
 import StaffBills from '@/pages/portal/StaffBills'
+import StaffPaymentGuide from '@/pages/portal/StaffPaymentGuide'
 import NotFoundPage from '@/pages/NotFoundPage'
 
 const queryClient = new QueryClient({
@@ -111,6 +112,7 @@ export default function App() {
                   <Route path="/staff/concerns" element={<StaffConcerns />} />
                   <Route path="/staff/concerns/:id" element={<StaffConcerns />} />
                   <Route path="/staff/payments" element={<StaffPayments />} />
+                  <Route path="/staff/payment-guide" element={<StaffPaymentGuide />} />
                 </Route>
                 <Route element={<RoleGuard allow={['admin']} />}>
                   <Route path="/admin" element={<AdminHome />} />
