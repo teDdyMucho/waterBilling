@@ -297,6 +297,7 @@
   "payGuide": {
     "title": "Payment Guide",
     "sub": "How a homeowner pays — a reference for staff.",
+    "subHomeowner": "How to pay your bill — step by step.",
     "stepsTitle": "How to pay — step by step",
     "step1": "Check the bill and remaining balance (Bills → amount due).",
     "step2": "Choose a channel below and send the EXACT amount.",

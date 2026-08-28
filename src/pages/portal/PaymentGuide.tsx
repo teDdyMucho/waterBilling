@@ -9,11 +9,15 @@ import { fetchPaymentSettings } from '@/features/payments/payments-api'
 import { useT } from '@/hooks/useT'
 
 /**
- * Gabay sa Pagbabayad — reference para sa staff kung paano magbayad ang
- * homeowner. Binabasa ang TOTOONG payment settings (channels + QR + tagubilin
- * ng admin), kaya walang hula/imbentong detalye.
+ * Gabay sa Pagbabayad — kung paano magbayad ang homeowner. Ginagamit ng staff
+ * (reference) at ng homeowner (sarili nilang gabay). Binabasa ang TOTOONG
+ * payment settings (channels + QR + tagubilin ng admin) — walang imbentong data.
  */
-export default function StaffPaymentGuide() {
+export default function PaymentGuide({
+  audience = 'staff',
+}: {
+  audience?: 'staff' | 'homeowner'
+}) {
   const { t } = useT()
   const { data: settings, isLoading } = useQuery({
     queryKey: ['payment-settings'],
@@ -36,7 +40,10 @@ export default function StaffPaymentGuide() {
 
   return (
     <AppShell>
-      <PageHeader title={t('payGuide.title')} description={t('payGuide.sub')} />
+      <PageHeader
+        title={t('payGuide.title')}
+        description={audience === 'homeowner' ? t('payGuide.subHomeowner') : t('payGuide.sub')}
+      />
 
       <div className="mx-auto max-w-3xl space-y-5">
         {/* ---- Steps ---- */}

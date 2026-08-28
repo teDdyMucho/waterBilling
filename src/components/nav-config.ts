@@ -45,6 +45,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
         { to: '/dashboard/bills', labelKey: 'sidebar.bills', icon: Receipt },
         { to: '/dashboard/consumption', labelKey: 'sidebar.consumption', icon: Droplets },
         { to: '/dashboard/payments', labelKey: 'sidebar.payments', icon: CreditCard },
+        { to: '/dashboard/payment-guide', labelKey: 'sidebar.paymentGuide', icon: ScrollText },
         { to: '/dashboard/messages', labelKey: 'sidebar.messages', icon: MessageSquare },
         { to: '/dashboard/profile', labelKey: 'sidebar.profile', icon: UserCircle },
       ],

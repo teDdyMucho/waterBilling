@@ -43,7 +43,7 @@ import AdminCycles from '@/pages/portal/AdminCycles'
 import AdminReview from '@/pages/portal/AdminReview'
 import StaffWorklist from '@/pages/portal/StaffWorklist'
 import StaffBills from '@/pages/portal/StaffBills'
-import StaffPaymentGuide from '@/pages/portal/StaffPaymentGuide'
+import PaymentGuide from '@/pages/portal/PaymentGuide'
 import NotFoundPage from '@/pages/NotFoundPage'
 
 const queryClient = new QueryClient({
@@ -100,6 +100,7 @@ export default function App() {
                   <Route path="/dashboard/messages" element={<HomeownerMessages />} />
                   <Route path="/dashboard/messages/:id" element={<HomeownerMessages />} />
                   <Route path="/dashboard/payments" element={<HomeownerPayments />} />
+                  <Route path="/dashboard/payment-guide" element={<PaymentGuide audience="homeowner" />} />
                   <Route path="/dashboard/pay/:billId" element={<HomeownerPay />} />
                 </Route>
                 <Route element={<RoleGuard allow={['staff']} />}>
@@ -112,7 +113,7 @@ export default function App() {
                   <Route path="/staff/concerns" element={<StaffConcerns />} />
                   <Route path="/staff/concerns/:id" element={<StaffConcerns />} />
                   <Route path="/staff/payments" element={<StaffPayments />} />
-                  <Route path="/staff/payment-guide" element={<StaffPaymentGuide />} />
+                  <Route path="/staff/payment-guide" element={<PaymentGuide audience="staff" />} />
                 </Route>
                 <Route element={<RoleGuard allow={['admin']} />}>
                   <Route path="/admin" element={<AdminHome />} />
