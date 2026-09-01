@@ -42,7 +42,10 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const readOnly = !basePath.startsWith('/admin')
+  // Admin AT staff ay parehong makaka-manage (add meter, link owner, edit).
+  // Ang pagbura ng buong lote ay admin LANG — delikado (may readings/bills).
+  const canManage = basePath.startsWith('/admin') || basePath.startsWith('/staff')
+  const canDelete = basePath.startsWith('/admin')
 
   const [editOpen, setEditOpen] = useState(false)
   const [meterModal, setMeterModal] = useState<{
@@ -59,7 +62,7 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
   const { data: directory } = useQuery({
     queryKey: ['homeowner-directory'],
     queryFn: fetchHomeownerDirectory,
-    enabled: !readOnly,
+    enabled: canManage,
   })
 
   const invalidate = () => {
@@ -130,21 +133,23 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
                 .join(' · ') || '—'}
             </p>
           </div>
-          {!readOnly && (
+          {canManage && (
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setEditOpen(true)} iconLeft={<Pencil className="size-4" />}>
                 {t('common.edit')}
               </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  if (window.confirm(t('properties.confirmDelete'))) mDelete.mutate()
-                }}
-                className="text-danger-600 hover:bg-danger-50"
-                iconLeft={<Trash2 className="size-4" />}
-              >
-                {t('properties.deleteProperty')}
-              </Button>
+              {canDelete && (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    if (window.confirm(t('properties.confirmDelete'))) mDelete.mutate()
+                  }}
+                  className="text-danger-600 hover:bg-danger-50"
+                  iconLeft={<Trash2 className="size-4" />}
+                >
+                  {t('properties.deleteProperty')}
+                </Button>
+              )}
             </div>
           )}
         </CardBody>
@@ -158,7 +163,7 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
             <MeterSlot
               utility="water"
               meter={water}
-              readOnly={readOnly}
+              readOnly={!canManage}
               onAdd={() => setMeterModal({ utility: 'water' })}
               onEdit={(m) => setMeterModal({ utility: 'water', editing: m })}
               onReplace={(m) => setMeterModal({ utility: 'water', replacing: m })}
@@ -166,7 +171,7 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
             <MeterSlot
               utility="electric"
               meter={electric}
-              readOnly={readOnly}
+              readOnly={!canManage}
               onAdd={() => setMeterModal({ utility: 'electric' })}
               onEdit={(m) => setMeterModal({ utility: 'electric', editing: m })}
               onReplace={(m) => setMeterModal({ utility: 'electric', replacing: m })}
@@ -197,7 +202,7 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
                     <p className="truncate text-xs text-slate-500">{o.profile?.email}</p>
                   </div>
                 </div>
-                {!readOnly && (
+                {canManage && (
                   <button
                     type="button"
                     onClick={() => mUnlink.mutate(o.id)}
@@ -210,7 +215,7 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
               </div>
             ))}
 
-            {!readOnly && (
+            {canManage && (
               <div className="flex gap-2 pt-1">
                 <Select value={linkTo} onChange={(e) => setLinkTo(e.target.value)} className="flex-1">
                   <option value="">{t('properties.selectHomeowner')}</option>
@@ -235,7 +240,7 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
         </Card>
       </div>
 
-      {!readOnly && (
+      {canManage && (
         <>
           <PropertyFormModal open={editOpen} onClose={() => setEditOpen(false)} editing={property} />
           {meterModal && (

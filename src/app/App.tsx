@@ -44,6 +44,7 @@ import AdminReview from '@/pages/portal/AdminReview'
 import StaffWorklist from '@/pages/portal/StaffWorklist'
 import StaffBills from '@/pages/portal/StaffBills'
 import PaymentGuide from '@/pages/portal/PaymentGuide'
+import MeterGuide from '@/pages/portal/MeterGuide'
 import NotFoundPage from '@/pages/NotFoundPage'
 
 const queryClient = new QueryClient({
@@ -107,6 +108,7 @@ export default function App() {
                   <Route path="/staff" element={<StaffHome />} />
                   <Route path="/staff/properties" element={<StaffProperties />} />
                   <Route path="/staff/properties/:id" element={<StaffPropertyDetail />} />
+                  <Route path="/staff/meter-guide" element={<MeterGuide />} />
                   <Route path="/staff/readings" element={<StaffWorklist />} />
                   <Route path="/staff/bills" element={<StaffBills />} />
                   <Route path="/staff/bills/:id" element={<StaffBills />} />

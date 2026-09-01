@@ -25,7 +25,8 @@ const STATUS_TONE: Record<PropertyStatus, BadgeTone> = {
 export function PropertiesList({ basePath }: { basePath: string }) {
   const { t } = useT()
   const navigate = useNavigate()
-  const readOnly = !basePath.startsWith('/admin')
+  // Admin at staff ay parehong makakagawa/mag-import ng lote.
+  const canManage = basePath.startsWith('/admin') || basePath.startsWith('/staff')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | PropertyStatus>('all')
   const [addOpen, setAddOpen] = useState(false)
@@ -60,7 +61,7 @@ export function PropertiesList({ basePath }: { basePath: string }) {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        {!readOnly && (
+        {canManage && (
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -106,7 +107,7 @@ export function PropertiesList({ basePath }: { basePath: string }) {
               icon={<Building2 className="size-6" />}
               title={t('properties.noProperties')}
               action={
-                !readOnly ? (
+                canManage ? (
                   <Button onClick={() => setAddOpen(true)} iconLeft={<Plus className="size-4" />}>
                     {t('properties.add')}
                   </Button>
@@ -127,7 +128,7 @@ export function PropertiesList({ basePath }: { basePath: string }) {
         )}
       </Card>
 
-      {!readOnly && (
+      {canManage && (
         <>
           <PropertyFormModal open={addOpen} onClose={() => setAddOpen(false)} />
           <ImportCsvModal open={importOpen} onClose={() => setImportOpen(false)} />
