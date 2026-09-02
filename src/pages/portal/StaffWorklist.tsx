@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
 import { EncodeReadingModal } from '@/features/readings/EncodeReadingModal'
-import { fetchActiveCycle, fetchWorklist } from '@/features/readings/readings-api'
+import { fetchActiveCycle, fetchCycles, fetchWorklist } from '@/features/readings/readings-api'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
@@ -33,10 +33,18 @@ export default function StaffWorklist() {
     queryKey: ['active-cycle'],
     queryFn: fetchActiveCycle,
   })
+  const { data: cycles, isLoading: cyclesLoading } = useQuery({
+    queryKey: ['cycles'],
+    queryFn: fetchCycles,
+  })
+  // Kung walang bukas na cycle, ipakita pa rin ang pinakabagong cycle bilang
+  // read-only na history — para manatiling nakikita ang mga na-encode na.
+  const displayCycle = cycle ?? cycles?.[0] ?? null
+  const readOnly = !cycle && Boolean(displayCycle)
   const { data: items, isLoading } = useQuery({
-    queryKey: ['worklist', cycle?.id],
-    queryFn: () => fetchWorklist(cycle!.id),
-    enabled: Boolean(cycle?.id),
+    queryKey: ['worklist', displayCycle?.id],
+    queryFn: () => fetchWorklist(displayCycle!.id),
+    enabled: Boolean(displayCycle?.id),
   })
 
   const list = items ?? []
@@ -71,7 +79,7 @@ export default function StaffWorklist() {
 
   const filters: Filter[] = ['all', 'unread', 'done', 'flagged']
 
-  if (cycleLoading) {
+  if (cycleLoading || cyclesLoading) {
     return (
       <AppShell>
         <div className="flex items-center justify-center gap-2 py-20 text-sm text-slate-500">
@@ -81,7 +89,7 @@ export default function StaffWorklist() {
     )
   }
 
-  if (!cycle) {
+  if (!displayCycle) {
     return (
       <AppShell>
         <PageHeader title={t('readings.worklistTitle')} description={t('readings.worklistSub')} />
@@ -95,8 +103,16 @@ export default function StaffWorklist() {
       <PageHeader
         title={t('readings.worklistTitle')}
         description={t('readings.worklistSub')}
-        action={<Badge tone="info">{`${t('readings.activeCycle')}: ${cycle.code}`}</Badge>}
+        action={
+          <Badge tone={readOnly ? 'neutral' : 'info'}>{`${t('readings.activeCycle')}: ${displayCycle.code}`}</Badge>
+        }
       />
+
+      {readOnly && (
+        <Alert tone="info" className="mb-4">
+          {t('readings.viewingPastCycle').replace('{code}', displayCycle.code)}
+        </Alert>
+      )}
 
       {/* Progress */}
       <Card className="mb-4 p-4 sm:p-5">
@@ -154,7 +170,7 @@ export default function StaffWorklist() {
               <Card>
                 <ul className="divide-y divide-slate-100">
                   {rows.map((i) => (
-                    <WorklistRow key={i.meter.id} item={i} onOpen={() => setActive(i)} />
+                    <WorklistRow key={i.meter.id} item={i} readOnly={readOnly} onOpen={() => setActive(i)} />
                   ))}
                 </ul>
               </Card>
@@ -163,26 +179,29 @@ export default function StaffWorklist() {
         </div>
       )}
 
-      {active && (
-        <EncodeReadingModal open onClose={() => setActive(null)} item={active} cycle={cycle} />
+      {active && !readOnly && (
+        <EncodeReadingModal open onClose={() => setActive(null)} item={active} cycle={displayCycle} />
       )}
     </AppShell>
   )
 }
 
-function WorklistRow({ item, onOpen }: { item: WorklistItem; onOpen: () => void }) {
+function WorklistRow({
+  item,
+  readOnly,
+  onOpen,
+}: {
+  item: WorklistItem
+  readOnly: boolean
+  onOpen: () => void
+}) {
   const { t } = useT()
   const isWater = item.meter.utility_type === 'water'
   const Icon = isWater ? Droplets : Zap
   const r = item.reading
 
-  return (
-    <li>
-      <button
-        type="button"
-        onClick={onOpen}
-        className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 sm:px-5"
-      >
+  const inner = (
+    <>
         <span
           className={cn(
             'grid size-10 shrink-0 place-items-center rounded-xl ring-1 ring-inset',
@@ -217,11 +236,28 @@ function WorklistRow({ item, onOpen }: { item: WorklistItem; onOpen: () => void 
               {t('readings.done')}
             </Badge>
           )
+        ) : readOnly ? (
+          <span className="text-xs text-slate-400">{t('readings.notRead')}</span>
         ) : (
           <Badge tone="neutral">{t('readings.encode')}</Badge>
         )}
-        <ChevronRight className="size-5 shrink-0 text-slate-300" />
-      </button>
+        {!readOnly && <ChevronRight className="size-5 shrink-0 text-slate-300" />}
+    </>
+  )
+
+  return (
+    <li>
+      {readOnly ? (
+        <div className="flex w-full items-center gap-3 px-4 py-3.5 sm:px-5">{inner}</div>
+      ) : (
+        <button
+          type="button"
+          onClick={onOpen}
+          className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 sm:px-5"
+        >
+          {inner}
+        </button>
+      )}
     </li>
   )
 }

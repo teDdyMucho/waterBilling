@@ -23,6 +23,7 @@ import { PropertyFormModal } from '@/features/properties/PropertyFormModal'
 import { MeterFormModal } from '@/features/properties/MeterFormModal'
 import { Card, CardHeader, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Select } from '@/components/ui/Field'
 import { Spinner } from '@/components/ui/Spinner'
@@ -54,6 +55,7 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
     replacing?: Meter
   } | null>(null)
   const [linkTo, setLinkTo] = useState('')
+  const [confirmDel, setConfirmDel] = useState(false)
 
   const { data: property, isLoading } = useQuery({
     queryKey: ['property', id],
@@ -141,10 +143,8 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
               {canDelete && (
                 <Button
                   variant="ghost"
-                  onClick={() => {
-                    if (window.confirm(t('properties.confirmDelete'))) mDelete.mutate()
-                  }}
-                  className="text-danger-600 hover:bg-danger-50"
+                  onClick={() => setConfirmDel(true)}
+                  className="text-red-600 hover:bg-red-50"
                   iconLeft={<Trash2 className="size-4" />}
                 >
                   {t('properties.deleteProperty')}
@@ -255,6 +255,17 @@ export function PropertyDetail({ basePath }: { basePath: string }) {
           )}
         </>
       )}
+      <ConfirmDialog
+        open={confirmDel}
+        onClose={() => setConfirmDel(false)}
+        onConfirm={() => mDelete.mutate()}
+        title={t('properties.confirmDeleteTitle').replace('{lot}', lotLabel(property.block, property.lot))}
+        message={t('properties.confirmDeleteMsg')}
+        confirmLabel={t('properties.deleteProperty')}
+        cancelLabel={t('common.cancel')}
+        danger
+        loading={mDelete.isPending}
+      />
     </>
   )
 }

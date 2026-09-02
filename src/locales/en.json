@@ -501,6 +501,8 @@
     "done": "Done",
     "flagged": "For review",
     "encodedBy": "encoded by",
+    "viewingPastCycle": "No open cycle for new readings — showing {code} (read-only).",
+    "notRead": "Not read",
 
     "encodeTitle": "Encode reading",
     "previous": "Previous reading",
@@ -722,6 +724,8 @@
     "back": "Back to properties",
     "deleteProperty": "Delete property",
     "confirmDelete": "Delete this property and its meters? This cannot be undone.",
+    "confirmDeleteTitle": "Delete {lot}?",
+    "confirmDeleteMsg": "Its meters, readings, and bills will also be deleted. This cannot be undone.",
     "detail": "Property detail",
     "saved": "Saved.",
     "utility": "Utility",

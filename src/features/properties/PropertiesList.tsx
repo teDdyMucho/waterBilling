@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Building2, ChevronRight, Droplets, Plus, Search, Upload, Zap } from 'lucide-react'
-import { fetchProperties } from '@/features/properties/properties-api'
+import { Building2, ChevronRight, Droplets, Plus, Search, Trash2, Upload, Zap } from 'lucide-react'
+import { deleteProperty, fetchProperties } from '@/features/properties/properties-api'
 import { PropertyFormModal } from '@/features/properties/PropertyFormModal'
 import { ImportCsvModal } from '@/features/properties/ImportCsvModal'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -27,12 +28,22 @@ export function PropertiesList({ basePath }: { basePath: string }) {
   const navigate = useNavigate()
   // Admin at staff ay parehong makakagawa/mag-import ng lote.
   const canManage = basePath.startsWith('/admin') || basePath.startsWith('/staff')
+  const canDelete = basePath.startsWith('/admin')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | PropertyStatus>('all')
   const [addOpen, setAddOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
+  const [confirmDel, setConfirmDel] = useState<{ id: string; label: string } | null>(null)
 
+  const qc = useQueryClient()
   const { data, isLoading } = useQuery({ queryKey: ['properties'], queryFn: fetchProperties })
+  const mDel = useMutation({
+    mutationFn: deleteProperty,
+    onSuccess: () => {
+      setConfirmDel(null)
+      qc.invalidateQueries({ queryKey: ['properties'] })
+    },
+  })
 
   const rows = useMemo(() => {
     const list = data ?? []
@@ -122,6 +133,7 @@ export function PropertiesList({ basePath }: { basePath: string }) {
                 key={p.id}
                 property={p}
                 onClick={() => navigate(`${basePath}/${p.id}`)}
+                onDelete={() => setConfirmDel({ id: p.id, label: lotLabel(p.block, p.lot) })}
               />
             ))}
           </ul>
@@ -134,26 +146,41 @@ export function PropertiesList({ basePath }: { basePath: string }) {
           <ImportCsvModal open={importOpen} onClose={() => setImportOpen(false)} />
         </>
       )}
+      {confirmDel && (
+        <ConfirmDialog
+          open
+          onClose={() => setConfirmDel(null)}
+          onConfirm={() => mDel.mutate(confirmDel.id)}
+          title={t('properties.confirmDeleteTitle').replace('{lot}', confirmDel.label)}
+          message={t('properties.confirmDeleteMsg')}
+          confirmLabel={t('properties.deleteProperty')}
+          cancelLabel={t('common.cancel')}
+          danger
+          loading={mDel.isPending}
+        />
+      )}
     </>
   )
 
   function PropertyRow({
     property: p,
     onClick,
+    onDelete,
   }: {
     property: PropertyWithRelations
     onClick: () => void
+    onDelete: () => void
   }) {
     const owner = p.owners?.find((o) => !o.end_date)?.profile?.full_name
     const water = p.meters?.some((m) => m.utility_type === 'water' && m.status === 'active')
     const electric = p.meters?.some((m) => m.utility_type === 'electric' && m.status === 'active')
 
     return (
-      <li>
+      <li className="flex items-center">
         <button
           type="button"
           onClick={onClick}
-          className="flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 sm:px-5"
+          className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 sm:px-5"
         >
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-100">
             <Building2 className="size-5" />
@@ -181,6 +208,16 @@ export function PropertiesList({ basePath }: { basePath: string }) {
 
           <ChevronRight className="size-5 shrink-0 text-slate-300" />
         </button>
+        {canDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            aria-label={t('properties.deleteProperty')}
+            className="mr-2 grid size-9 shrink-0 place-items-center rounded-md text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+          >
+            <Trash2 className="size-4" />
+          </button>
+        )}
       </li>
     )
   }

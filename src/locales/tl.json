@@ -501,6 +501,8 @@
     "done": "Tapos",
     "flagged": "Para sa review",
     "encodedBy": "ni-encode ni",
+    "viewingPastCycle": "Walang bukas na cycle para sa bagong reading — {code} ang ipinapakita (read-only).",
+    "notRead": "Walang basa",
 
     "encodeTitle": "Mag-encode ng reading",
     "previous": "Naunang reading",
@@ -722,6 +724,8 @@
     "back": "Bumalik sa mga lote",
     "deleteProperty": "Burahin ang lote",
     "confirmDelete": "Burahin ang lote at ang mga metro nito? Hindi na maibabalik.",
+    "confirmDeleteTitle": "Burahin ang {lot}?",
+    "confirmDeleteMsg": "Mabubura rin ang mga metro, reading, at bill nito. Hindi na maibabalik.",
     "detail": "Detalye ng lote",
     "saved": "Na-save.",
     "utility": "Utility",
