@@ -15,6 +15,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
@@ -45,6 +46,7 @@ export default function AdminCycles() {
   const qc = useQueryClient()
   const [open, setOpen] = useState(false)
   const [viewBills, setViewBills] = useState<{ id: string; code: string } | null>(null)
+  const [confirm, setConfirm] = useState<{ kind: 'delete' | 'release'; id: string; code: string } | null>(null)
   const [note, setNote] = useState<string | null>(null)
 
   const { data, isLoading } = useQuery({ queryKey: ['cycles'], queryFn: fetchCycles })
@@ -70,6 +72,7 @@ export default function AdminCycles() {
     mutationFn: releaseBills,
     onSuccess: (n) => {
       setNote(t('billing.released').replace('{n}', String(n)))
+      setConfirm(null)
       invalidate()
     },
   })
@@ -84,6 +87,7 @@ export default function AdminCycles() {
     mutationFn: deleteCycle,
     onSuccess: () => {
       setNote(t('readings.cycleDeleted'))
+      setConfirm(null)
       invalidate()
     },
   })
@@ -202,12 +206,7 @@ export default function AdminCycles() {
                     variant="outline"
                     disabled={busy || !canRelease}
                     title={!canRelease ? t('billing.needGenerate') : undefined}
-                    onClick={() => {
-                      if (window.confirm(t('billing.confirmRelease'))) {
-                        setNote(null)
-                        mRel.mutate(c.id)
-                      }
-                    }}
+                    onClick={() => setConfirm({ kind: 'release', id: c.id, code: c.code })}
                     iconLeft={<Send className="size-3.5" />}
                   >
                     {t('billing.release')}
@@ -224,13 +223,8 @@ export default function AdminCycles() {
                     size="sm"
                     variant="ghost"
                     disabled={busy}
-                    className="text-danger-600 hover:bg-danger-50"
-                    onClick={() => {
-                      if (window.confirm(t('readings.confirmDeleteCycle').replace('{code}', c.code))) {
-                        setNote(null)
-                        mDel.mutate(c.id)
-                      }
-                    }}
+                    className="text-red-600 hover:bg-red-50"
+                    onClick={() => setConfirm({ kind: 'delete', id: c.id, code: c.code })}
                     iconLeft={<Trash2 className="size-3.5" />}
                   >
                     {t('readings.deleteCycle')}
@@ -246,6 +240,27 @@ export default function AdminCycles() {
       <CycleFormModal open={open} onClose={() => setOpen(false)} />
       {viewBills && (
         <BillsModal cycle={viewBills} onClose={() => setViewBills(null)} billTone={BILL_TONE} />
+      )}
+      {confirm && (
+        <ConfirmDialog
+          open
+          onClose={() => setConfirm(null)}
+          onConfirm={() => {
+            setNote(null)
+            if (confirm.kind === 'delete') mDel.mutate(confirm.id)
+            else mRel.mutate(confirm.id)
+          }}
+          title={
+            confirm.kind === 'delete'
+              ? t('readings.deleteCycleTitle').replace('{code}', confirm.code)
+              : `${t('billing.releaseTitle')} · ${confirm.code}`
+          }
+          message={confirm.kind === 'delete' ? t('readings.confirmDeleteCycle') : t('billing.confirmRelease')}
+          confirmLabel={confirm.kind === 'delete' ? t('readings.deleteCycle') : t('billing.release')}
+          cancelLabel={t('common.cancel')}
+          danger={confirm.kind === 'delete'}
+          loading={confirm.kind === 'delete' ? mDel.isPending : mRel.isPending}
+        />
       )}
     </AppShell>
   )

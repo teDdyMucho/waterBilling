@@ -415,6 +415,7 @@
     "needVerify": "Verify the readings first (Reading Review).",
     "needGenerate": "Generate the bills first.",
     "penaltiesApplied": "{n} bills marked overdue.",
+    "releaseTitle": "Release bills?",
     "confirmRelease": "Release all draft bills for this cycle? Homeowners will see them.",
     "billsFor": "Bills for {code}",
     "viewBills": "View bills",
@@ -481,7 +482,8 @@
     "noCycles": "No billing cycles yet. Create the first one.",
     "noneForStatus": "No cycles with this status.",
     "deleteCycle": "Delete",
-    "confirmDeleteCycle": "Delete cycle {code}? Its readings and bills will also be deleted. This cannot be undone.",
+    "deleteCycleTitle": "Delete cycle {code}?",
+    "confirmDeleteCycle": "Its readings and bills will also be deleted. This cannot be undone.",
     "cycleDeleted": "Cycle deleted.",
 
     "worklistTitle": "Meter Readings",

@@ -415,6 +415,7 @@
     "needVerify": "I-verify muna ang mga reading (Reading Review).",
     "needGenerate": "I-generate muna ang bills.",
     "penaltiesApplied": "{n} bill ang minarkahang overdue.",
+    "releaseTitle": "Ilabas ang bills?",
     "confirmRelease": "Ilabas lahat ng draft bill sa cycle na ito? Makikita ito ng homeowner.",
     "billsFor": "Mga bill para sa {code}",
     "viewBills": "Tingnan ang bills",
@@ -481,7 +482,8 @@
     "noCycles": "Wala pang billing cycle. Gumawa ng una.",
     "noneForStatus": "Walang cycle sa status na ito.",
     "deleteCycle": "Burahin",
-    "confirmDeleteCycle": "Burahin ang cycle {code}? Mabubura rin ang mga reading at bill nito. Hindi na maibabalik.",
+    "deleteCycleTitle": "Burahin ang cycle {code}?",
+    "confirmDeleteCycle": "Mabubura rin ang mga reading at bill nito. Hindi na maibabalik.",
     "cycleDeleted": "Nabura ang cycle.",
 
     "worklistTitle": "Pagbasa ng Metro",
