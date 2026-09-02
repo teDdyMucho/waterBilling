@@ -480,6 +480,9 @@
     "statusClosed": "Sarado",
     "noCycles": "Wala pang billing cycle. Gumawa ng una.",
     "noneForStatus": "Walang cycle sa status na ito.",
+    "deleteCycle": "Burahin",
+    "confirmDeleteCycle": "Burahin ang cycle {code}? Mabubura rin ang mga reading at bill nito. Hindi na maibabalik.",
+    "cycleDeleted": "Nabura ang cycle.",
 
     "worklistTitle": "Pagbasa ng Metro",
     "worklistSub": "Mag-encode ng reading para sa active cycle. Kailangan ng litrato.",

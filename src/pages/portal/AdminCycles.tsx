@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CalendarClock, FileText, Plus, Receipt, Send, TriangleAlert } from 'lucide-react'
+import { CalendarClock, FileText, Plus, Receipt, Send, Trash2, TriangleAlert } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
 import { CycleFormModal } from '@/features/readings/CycleFormModal'
-import { fetchCycles } from '@/features/readings/readings-api'
+import { deleteCycle, fetchCycles } from '@/features/readings/readings-api'
 import {
   applyPenalties,
   fetchBillsForCycle,
@@ -80,8 +80,15 @@ export default function AdminCycles() {
       invalidate()
     },
   })
+  const mDel = useMutation({
+    mutationFn: deleteCycle,
+    onSuccess: () => {
+      setNote(t('readings.cycleDeleted'))
+      invalidate()
+    },
+  })
 
-  const busy = mGen.isPending || mRel.isPending || mPen.isPending
+  const busy = mGen.isPending || mRel.isPending || mPen.isPending || mDel.isPending
 
   return (
     <AppShell>
@@ -212,6 +219,21 @@ export default function AdminCycles() {
                     iconLeft={<FileText className="size-3.5" />}
                   >
                     {t('billing.viewBills')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={busy}
+                    className="text-danger-600 hover:bg-danger-50"
+                    onClick={() => {
+                      if (window.confirm(t('readings.confirmDeleteCycle').replace('{code}', c.code))) {
+                        setNote(null)
+                        mDel.mutate(c.id)
+                      }
+                    }}
+                    iconLeft={<Trash2 className="size-3.5" />}
+                  >
+                    {t('readings.deleteCycle')}
                   </Button>
                 </div>
               </li>

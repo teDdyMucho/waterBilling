@@ -480,6 +480,9 @@
     "statusClosed": "Closed",
     "noCycles": "No billing cycles yet. Create the first one.",
     "noneForStatus": "No cycles with this status.",
+    "deleteCycle": "Delete",
+    "confirmDeleteCycle": "Delete cycle {code}? Its readings and bills will also be deleted. This cannot be undone.",
+    "cycleDeleted": "Cycle deleted.",
 
     "worklistTitle": "Meter Readings",
     "worklistSub": "Encode readings for the active cycle. A photo is required.",

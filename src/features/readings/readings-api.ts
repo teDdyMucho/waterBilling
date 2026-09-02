@@ -57,6 +57,12 @@ export async function updateCycle(id: string, input: Partial<CycleInput>): Promi
   if (error) throw error
 }
 
+/** Buburahin ang cycle — cascade sa readings at bills nito (admin lang, RLS). */
+export async function deleteCycle(id: string): Promise<void> {
+  const { error } = await supabase.from('billing_cycles').delete().eq('id', id)
+  if (error) throw error
+}
+
 // ---- Previous reading (RPC) ----------------------------------------
 
 export async function getPreviousReading(meterId: string): Promise<number> {
