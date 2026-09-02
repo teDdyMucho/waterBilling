@@ -73,6 +73,39 @@ export async function applyPenalties(): Promise<number> {
   return Number(data ?? 0)
 }
 
+/** Bilang kada cycle: para malaman kung pwede nang mag-generate/release. */
+export interface CycleStats {
+  /** Reading na 'verified' — ito ang ginagamit ng generate_bills. */
+  verified: number
+  /** Reading na naka-encode pero hindi pa verified (for_review). */
+  forReview: number
+  /** Draft bills na na-generate na — pwede nang i-release. */
+  draftBills: number
+}
+
+/** Stats ng lahat ng cycle sa isang tawag (map by cycle id). */
+export async function fetchCycleStats(): Promise<Record<string, CycleStats>> {
+  const [readingsRes, billsRes] = await Promise.all([
+    supabase.from('meter_readings').select('billing_cycle_id, status').in('status', ['verified', 'for_review']),
+    supabase.from('bills').select('billing_cycle_id, status').eq('status', 'draft'),
+  ])
+  if (readingsRes.error) throw readingsRes.error
+  if (billsRes.error) throw billsRes.error
+
+  const map: Record<string, CycleStats> = {}
+  const at = (id: string) => (map[id] ??= { verified: 0, forReview: 0, draftBills: 0 })
+
+  for (const r of (readingsRes.data ?? []) as { billing_cycle_id: string | null; status: string }[]) {
+    if (!r.billing_cycle_id) continue
+    if (r.status === 'verified') at(r.billing_cycle_id).verified++
+    else if (r.status === 'for_review') at(r.billing_cycle_id).forReview++
+  }
+  for (const b of (billsRes.data ?? []) as { billing_cycle_id: string | null }[]) {
+    if (b.billing_cycle_id) at(b.billing_cycle_id).draftBills++
+  }
+  return map
+}
+
 export async function fetchBillsForCycle(cycleId: string): Promise<
   (Bill & { property: { block: string; lot: string } | null })[]
 > {

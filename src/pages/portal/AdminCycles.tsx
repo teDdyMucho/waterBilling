@@ -7,6 +7,7 @@ import { fetchCycles } from '@/features/readings/readings-api'
 import {
   applyPenalties,
   fetchBillsForCycle,
+  fetchCycleStats,
   generateBills,
   releaseBills,
 } from '@/features/billing/billing-api'
@@ -46,10 +47,12 @@ export default function AdminCycles() {
 
   const { data, isLoading } = useQuery({ queryKey: ['cycles'], queryFn: fetchCycles })
   const cycles = data ?? []
+  const { data: statsMap } = useQuery({ queryKey: ['cycle-stats'], queryFn: fetchCycleStats })
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['cycles'] })
     qc.invalidateQueries({ queryKey: ['bills'] })
+    qc.invalidateQueries({ queryKey: ['cycle-stats'] })
   }
 
   const mGen = useMutation({
@@ -115,7 +118,16 @@ export default function AdminCycles() {
           </div>
         ) : (
           <ul className="divide-y divide-slate-100">
-            {cycles.map((c) => (
+            {cycles.map((c) => {
+              const s = statsMap?.[c.id] ?? { verified: 0, forReview: 0, draftBills: 0 }
+              const canGenerate = s.verified > 0
+              const canRelease = s.draftBills > 0
+              const genHint = canGenerate
+                ? null
+                : s.forReview > 0
+                  ? t('billing.needVerify')
+                  : t('billing.needReading')
+              return (
               <li key={c.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-100">
@@ -129,6 +141,12 @@ export default function AdminCycles() {
                     <p className="text-xs text-slate-500">
                       {c.due_date ? `${t('billing.dueDate')}: ${shortDate(c.due_date)}` : '—'}
                     </p>
+                    {genHint && (
+                      <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-slate-600">
+                        <TriangleAlert className="size-3.5 shrink-0" />
+                        {genHint}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -136,7 +154,8 @@ export default function AdminCycles() {
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={busy}
+                    disabled={busy || !canGenerate}
+                    title={genHint ?? undefined}
                     onClick={() => {
                       setNote(null)
                       mGen.mutate(c.id)
@@ -148,7 +167,8 @@ export default function AdminCycles() {
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={busy}
+                    disabled={busy || !canRelease}
+                    title={!canRelease ? t('billing.needGenerate') : undefined}
                     onClick={() => {
                       if (window.confirm(t('billing.confirmRelease'))) {
                         setNote(null)
@@ -169,7 +189,8 @@ export default function AdminCycles() {
                   </Button>
                 </div>
               </li>
-            ))}
+              )
+            })}
           </ul>
         )}
       </Card>
