@@ -132,6 +132,8 @@ export interface WorklistItem {
   property: Pick<Property, 'id' | 'block' | 'lot' | 'phase'>
   ownerName: string | null
   reading: MeterReading | null
+  /** Pangalan ng staff/admin na nag-encode ng reading (kung meron). */
+  readerName: string | null
 }
 
 // ---- Phase 4: Rates & Bills ----------------------------------------

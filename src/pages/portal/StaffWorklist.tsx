@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { Spinner } from '@/components/ui/Spinner'
 import { useT } from '@/hooks/useT'
-import { lotLabel } from '@/lib/format'
+import { lotLabel, meterReading } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { WorklistItem } from '@/types/domain'
 
@@ -196,6 +196,13 @@ function WorklistRow({ item, onOpen }: { item: WorklistItem; onOpen: () => void 
           <p className="truncate text-sm text-slate-500">
             {item.ownerName ?? '—'} · {isWater ? t('properties.water') : t('properties.electric')}
           </p>
+          {r && (
+            <p className="mt-0.5 truncate text-xs text-slate-400">
+              {meterReading(r.present_reading, item.meter.digits)} · {t('readings.consumption')}:{' '}
+              {r.consumption}
+              {item.readerName ? ` · ${t('readings.encodedBy')} ${item.readerName}` : ''}
+            </p>
+          )}
         </div>
 
         {r ? (

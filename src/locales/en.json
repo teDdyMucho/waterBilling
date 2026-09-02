@@ -498,6 +498,7 @@
     "reEncode": "View",
     "done": "Done",
     "flagged": "For review",
+    "encodedBy": "encoded by",
 
     "encodeTitle": "Encode reading",
     "previous": "Previous reading",

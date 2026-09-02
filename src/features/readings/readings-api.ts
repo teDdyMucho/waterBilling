@@ -151,6 +151,18 @@ export async function fetchWorklist(cycleId: string): Promise<WorklistItem[]> {
   const byMeter = new Map<string, MeterReading>()
   for (const r of (readings ?? []) as MeterReading[]) byMeter.set(r.meter_id, r)
 
+  // Pangalan ng nag-encode (read_by → profiles). Isang query lang.
+  const readerIds = [
+    ...new Set((readings ?? []).map((r: MeterReading) => r.read_by).filter(Boolean)),
+  ] as string[]
+  const readerNames = new Map<string, string>()
+  if (readerIds.length) {
+    const { data: profs } = await supabase.from('profiles').select('id, full_name').in('id', readerIds)
+    for (const p of (profs ?? []) as { id: string; full_name: string }[]) {
+      readerNames.set(p.id, p.full_name)
+    }
+  }
+
   return ((meters ?? []) as unknown as (Meter & {
     property: (Pick<Property, 'id' | 'block' | 'lot' | 'phase'> & {
       owners: { end_date: string | null; profile: { full_name: string } | null }[]
@@ -158,13 +170,15 @@ export async function fetchWorklist(cycleId: string): Promise<WorklistItem[]> {
   })[]).map((m) => {
     const activeOwner = m.property?.owners?.find((o) => !o.end_date)
     const { property: _p, ...meter } = m
+    const reading = byMeter.get(m.id) ?? null
     return {
       meter: meter as Meter,
       property: m.property
         ? { id: m.property.id, block: m.property.block, lot: m.property.lot, phase: m.property.phase }
         : { id: '', block: '?', lot: '?', phase: null },
       ownerName: activeOwner?.profile?.full_name ?? null,
-      reading: byMeter.get(m.id) ?? null,
+      reading,
+      readerName: reading?.read_by ? readerNames.get(reading.read_by) ?? null : null,
     }
   })
 }
