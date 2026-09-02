@@ -157,9 +157,10 @@ export default function AdminCycles() {
           <ul className="divide-y divide-slate-100">
             {filtered.map((c) => {
               const s = statsMap?.[c.id] ?? { verified: 0, forReview: 0, draftBills: 0 }
+              const isClosed = c.status === 'closed'
               const canGenerate = s.verified > 0
               const canRelease = s.draftBills > 0
-              const genHint = canGenerate
+              const genHint = canGenerate || isClosed
                 ? null
                 : s.forReview > 0
                   ? t('billing.needVerify')
@@ -188,29 +189,33 @@ export default function AdminCycles() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy || !canGenerate}
-                    title={genHint ?? undefined}
-                    onClick={() => {
-                      setNote(null)
-                      mGen.mutate(c.id)
-                    }}
-                    iconLeft={<Receipt className="size-3.5" />}
-                  >
-                    {t('billing.generate')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy || !canRelease}
-                    title={!canRelease ? t('billing.needGenerate') : undefined}
-                    onClick={() => setConfirm({ kind: 'release', id: c.id, code: c.code })}
-                    iconLeft={<Send className="size-3.5" />}
-                  >
-                    {t('billing.release')}
-                  </Button>
+                  {!isClosed && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy || !canGenerate}
+                        title={genHint ?? undefined}
+                        onClick={() => {
+                          setNote(null)
+                          mGen.mutate(c.id)
+                        }}
+                        iconLeft={<Receipt className="size-3.5" />}
+                      >
+                        {t('billing.generate')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy || !canRelease}
+                        title={!canRelease ? t('billing.needGenerate') : undefined}
+                        onClick={() => setConfirm({ kind: 'release', id: c.id, code: c.code })}
+                        iconLeft={<Send className="size-3.5" />}
+                      >
+                        {t('billing.release')}
+                      </Button>
+                    </>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
