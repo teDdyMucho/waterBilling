@@ -479,6 +479,7 @@
     "statusBilled": "Billed",
     "statusClosed": "Closed",
     "noCycles": "No billing cycles yet. Create the first one.",
+    "noneForStatus": "No cycles with this status.",
 
     "worklistTitle": "Meter Readings",
     "worklistSub": "Encode readings for the active cycle. A photo is required.",

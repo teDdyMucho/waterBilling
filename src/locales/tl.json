@@ -479,6 +479,7 @@
     "statusBilled": "Nabilling",
     "statusClosed": "Sarado",
     "noCycles": "Wala pang billing cycle. Gumawa ng una.",
+    "noneForStatus": "Walang cycle sa status na ito.",
 
     "worklistTitle": "Pagbasa ng Metro",
     "worklistSub": "Mag-encode ng reading para sa active cycle. Kailangan ng litrato.",

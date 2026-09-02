@@ -12,22 +12,24 @@ export type BadgeTone =
   | 'info'
 
 /**
- * Monochrome status badges — pinag-iiba sa fill-shade, border, at weight
- * (hindi sa kulay), ayon sa premium na monochrome na disenyo:
- *   • solid dark   = tapos / positive (success, brand, confirmed, paid)
- *   • outline bold = alerto (danger, overdue, rejected, escalated)
- *   • light fill   = naghihintay (warning, neutral)
- *   • medium fill  = ginagawa (info)
+ * Color-coded status badges. Ang kulay ay nagbibigay ng mabilisang senyas ng
+ * estado (semantic status colors — sanctioned exception sa monochrome UI):
+ *   • success (green)  = positive / tapos (open, paid, confirmed, active)
+ *   • info (blue)      = ginagawa (reading, in-progress, staff)
+ *   • warning (amber)  = naghihintay / alerto (billed, unpaid, pending)
+ *   • danger (red)     = problema (overdue, rejected, escalated, blocked)
+ *   • neutral (gray)   = tapos-na/tahimik (closed, draft, inactive)
+ *   • brand (dark)     = admin / brand emphasis
  */
 const TONES: Record<BadgeTone, string> = {
   neutral: 'bg-slate-100 text-slate-600 ring-slate-200',
   brand: 'bg-brand-800 text-white ring-brand-800',
-  water: 'bg-slate-100 text-slate-700 ring-slate-200',
-  power: 'bg-slate-100 text-slate-700 ring-slate-200',
-  success: 'bg-brand-800 text-white ring-brand-800',
-  warning: 'bg-slate-100 text-slate-700 ring-slate-300',
-  danger: 'bg-white text-brand-800 ring-brand-700 font-semibold',
-  info: 'bg-slate-200 text-slate-800 ring-slate-300',
+  water: 'bg-sky-50 text-sky-700 ring-sky-200',
+  power: 'bg-amber-50 text-amber-700 ring-amber-200',
+  success: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+  warning: 'bg-amber-50 text-amber-700 ring-amber-200',
+  danger: 'bg-red-50 text-red-700 ring-red-200',
+  info: 'bg-blue-50 text-blue-700 ring-blue-200',
 }
 
 export function Badge({

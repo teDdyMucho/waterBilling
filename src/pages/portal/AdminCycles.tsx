@@ -20,6 +20,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
 import { useT } from '@/hooks/useT'
 import { money, shortDate } from '@/lib/format'
+import { cn } from '@/lib/cn'
 import type { BillStatus, CycleStatus } from '@/types/domain'
 
 const TONE: Record<CycleStatus, BadgeTone> = {
@@ -28,6 +29,7 @@ const TONE: Record<CycleStatus, BadgeTone> = {
   billed: 'warning',
   closed: 'neutral',
 }
+const STATUS_TABS: ('all' | CycleStatus)[] = ['all', 'open', 'reading', 'billed', 'closed']
 const BILL_TONE: Record<BillStatus, BadgeTone> = {
   draft: 'neutral',
   unpaid: 'warning',
@@ -48,6 +50,8 @@ export default function AdminCycles() {
   const { data, isLoading } = useQuery({ queryKey: ['cycles'], queryFn: fetchCycles })
   const cycles = data ?? []
   const { data: statsMap } = useQuery({ queryKey: ['cycle-stats'], queryFn: fetchCycleStats })
+  const [statusFilter, setStatusFilter] = useState<'all' | CycleStatus>('all')
+  const filtered = statusFilter === 'all' ? cycles : cycles.filter((c) => c.status === statusFilter)
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['cycles'] })
@@ -107,6 +111,26 @@ export default function AdminCycles() {
         </Alert>
       )}
 
+      {!isLoading && cycles.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          {STATUS_TABS.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setStatusFilter(s)}
+              className={cn(
+                'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                statusFilter === s
+                  ? 'bg-brand-700 text-white'
+                  : 'bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50',
+              )}
+            >
+              {s === 'all' ? t('accounts.filterAll') : t(`readings.status${cap(s)}`)}
+            </button>
+          ))}
+        </div>
+      )}
+
       <Card>
         {isLoading ? (
           <div className="flex items-center justify-center gap-2 py-16 text-sm text-slate-500">
@@ -116,9 +140,11 @@ export default function AdminCycles() {
           <div className="p-5">
             <EmptyState icon={<CalendarClock className="size-6" />} title={t('readings.noCycles')} />
           </div>
+        ) : filtered.length === 0 ? (
+          <p className="p-8 text-center text-sm text-slate-500">{t('readings.noneForStatus')}</p>
         ) : (
           <ul className="divide-y divide-slate-100">
-            {cycles.map((c) => {
+            {filtered.map((c) => {
               const s = statsMap?.[c.id] ?? { verified: 0, forReview: 0, draftBills: 0 }
               const canGenerate = s.verified > 0
               const canRelease = s.draftBills > 0
