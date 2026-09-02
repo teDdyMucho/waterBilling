@@ -20,6 +20,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
 import { useT } from '@/hooks/useT'
 import { money, shortDate } from '@/lib/format'
+import { cn } from '@/lib/cn'
 import type { PaymentStatus } from '@/types/domain'
 
 const TONE: Record<PaymentStatus, BadgeTone> = {
@@ -37,8 +38,10 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
   const [note, setNote] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [tab, setTab] = useState<'pending' | 'confirmed'>('pending')
 
-  const statuses: PaymentStatus[] = mode === 'staff' ? ['submitted'] : ['submitted', 'endorsed']
+  const statuses: PaymentStatus[] =
+    mode === 'staff' ? ['submitted'] : ['submitted', 'endorsed', 'confirmed']
   const { data, isLoading } = useQuery({
     queryKey: ['payment-queue', mode],
     queryFn: () => fetchPaymentsInStatuses(statuses),
@@ -82,24 +85,43 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
     }
   }
 
-  const allRows = data ?? []
+  const all = data ?? []
+  const pendingCount = all.filter((p) => p.status !== 'confirmed').length
+  const confirmedCount = all.filter((p) => p.status === 'confirmed').length
+  // Admin: hatiin per tab (di pa confirmed vs confirmed na). Staff: buo.
+  const scoped =
+    mode === 'admin'
+      ? all.filter((p) => (tab === 'confirmed' ? p.status === 'confirmed' : p.status !== 'confirmed'))
+      : all
   const q = search.trim().toLowerCase()
   const rows = q
-    ? allRows.filter((p) =>
+    ? scoped.filter((p) =>
         `${p.submitter?.full_name ?? ''} ${p.payment_no} ${p.amount} ${t(`payments.m_${p.method}`)} ${
           p.reference_number ?? ''
-        } ${p.bill?.bill_no ?? ''}`
+        } ${p.bill?.bill_no ?? ''} ${p.official_receipt_no ?? ''}`
           .toLowerCase()
           .includes(q),
       )
-    : allRows
+    : scoped
   const busy = mEndorse.isPending || mConfirm.isPending || mReject.isPending
 
   return (
     <AppShell>
       <PageHeader
-        title={mode === 'staff' ? t('payments.endorseTitle') : t('payments.confirmTitle')}
-        description={mode === 'staff' ? t('payments.endorseSub') : t('payments.confirmSub')}
+        title={
+          mode === 'staff'
+            ? t('payments.endorseTitle')
+            : tab === 'confirmed'
+              ? t('payments.confirmedTitle')
+              : t('payments.confirmTitle')
+        }
+        description={
+          mode === 'staff'
+            ? t('payments.endorseSub')
+            : tab === 'confirmed'
+              ? t('payments.confirmedSub')
+              : t('payments.confirmSub')
+        }
       />
 
       {note && (
@@ -111,6 +133,28 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
         <Alert tone="danger" className="mb-4">
           {error}
         </Alert>
+      )}
+
+      {mode === 'admin' && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          {(['pending', 'confirmed'] as const).map((tb) => (
+            <button
+              key={tb}
+              type="button"
+              onClick={() => setTab(tb)}
+              className={cn(
+                'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                tab === tb
+                  ? 'bg-brand-700 text-white'
+                  : 'bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50',
+              )}
+            >
+              {tb === 'pending'
+                ? `${t('payments.tabPending')} (${pendingCount})`
+                : `${t('payments.tabConfirmed')} (${confirmedCount})`}
+            </button>
+          ))}
+        </div>
       )}
 
       <div className="mb-4 sm:max-w-xs">
@@ -131,7 +175,13 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
           <div className="p-5">
             <EmptyState
               icon={<ShieldCheck className="size-6" />}
-              title={mode === 'staff' ? t('payments.noEndorse') : t('payments.noConfirm')}
+              title={
+                mode === 'staff'
+                  ? t('payments.noEndorse')
+                  : tab === 'confirmed'
+                    ? t('payments.noConfirmed')
+                    : t('payments.noConfirm')
+              }
             />
           </div>
         ) : (
@@ -155,6 +205,12 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
                         {p.bill.bill_no} · {money(p.bill.balance)}
                       </p>
                     )}
+                    {p.status === 'confirmed' && p.official_receipt_no && (
+                      <p className="mt-0.5 text-xs font-semibold text-emerald-700">
+                        {t('payments.orLabel')} {p.official_receipt_no}
+                        {p.confirmed_at ? ` · ${shortDate(p.confirmed_at)}` : ''}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -162,47 +218,51 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
                   <Button size="sm" variant="outline" onClick={() => openProof(p.proof_path)} iconLeft={<ImageIcon className="size-4" />}>
                     {t('payments.viewProof')}
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() => {
-                      const r = window.prompt(t('payments.rejectReason'))
-                      if (r && r.trim()) {
-                        setError(null)
-                        mReject.mutate({ id: p.id, reason: r.trim() })
-                      }
-                    }}
-                    iconLeft={<X className="size-4" />}
-                  >
-                    {t('payments.reject')}
-                  </Button>
-                  {p.status === 'submitted' ? (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      disabled={busy}
-                      onClick={() => {
-                        setError(null)
-                        mEndorse.mutate(p.id)
-                      }}
-                      iconLeft={<ShieldCheck className="size-4" />}
-                    >
-                      {t('payments.endorse')}
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="success"
-                      disabled={busy || mode === 'staff'}
-                      onClick={() => {
-                        setError(null)
-                        mConfirm.mutate(p.id)
-                      }}
-                      iconLeft={<Check className="size-4" />}
-                    >
-                      {t('payments.confirm')}
-                    </Button>
+                  {p.status !== 'confirmed' && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => {
+                          const r = window.prompt(t('payments.rejectReason'))
+                          if (r && r.trim()) {
+                            setError(null)
+                            mReject.mutate({ id: p.id, reason: r.trim() })
+                          }
+                        }}
+                        iconLeft={<X className="size-4" />}
+                      >
+                        {t('payments.reject')}
+                      </Button>
+                      {p.status === 'submitted' ? (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={busy}
+                          onClick={() => {
+                            setError(null)
+                            mEndorse.mutate(p.id)
+                          }}
+                          iconLeft={<ShieldCheck className="size-4" />}
+                        >
+                          {t('payments.endorse')}
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="success"
+                          disabled={busy || mode === 'staff'}
+                          onClick={() => {
+                            setError(null)
+                            mConfirm.mutate(p.id)
+                          }}
+                          iconLeft={<Check className="size-4" />}
+                        >
+                          {t('payments.confirm')}
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               </li>
