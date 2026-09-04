@@ -247,6 +247,52 @@ export async function fetchMyConsumption(): Promise<ConsumptionPoint[]> {
   return [...map.values()].sort((a, b) => a.code.localeCompare(b.code)).slice(-12)
 }
 
+export interface MyReadingRow {
+  id: string
+  code: string
+  utility: 'water' | 'electric'
+  present: number
+  consumption: number
+  photoPath: string | null
+  readAt: string | null
+}
+
+/**
+ * Mga reading ng homeowner (per metro, per cycle) kasama ang litrato ng metro
+ * na kinuha ng staff. RLS: sariling metro lang (owns_meter).
+ */
+export async function fetchMyReadings(): Promise<MyReadingRow[]> {
+  const { data, error } = await supabase
+    .from('meter_readings')
+    .select(
+      'id, present_reading, consumption, photo_path, read_at, status, meter:meters(utility_type), cycle:billing_cycles(code)',
+    )
+    .in('status', ['verified', 'for_review'])
+  if (error) throw error
+
+  const rows = (data ?? []) as unknown as {
+    id: string
+    present_reading: number
+    consumption: number
+    photo_path: string | null
+    read_at: string | null
+    meter: { utility_type: string } | null
+    cycle: { code: string } | null
+  }[]
+
+  return rows
+    .map((r) => ({
+      id: r.id,
+      code: r.cycle?.code ?? '—',
+      utility: (r.meter?.utility_type === 'electric' ? 'electric' : 'water') as 'water' | 'electric',
+      present: Number(r.present_reading),
+      consumption: Number(r.consumption),
+      photoPath: r.photo_path,
+      readAt: r.read_at,
+    }))
+    .sort((a, b) => b.code.localeCompare(a.code))
+}
+
 /** Pinakabagong reading ng isang metro (para sa homeowner card). */
 export async function fetchLatestReading(meterId: string): Promise<MeterReading | null> {
   const { data, error } = await supabase

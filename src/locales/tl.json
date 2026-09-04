@@ -374,7 +374,10 @@
     "waterTitle": "Tubig (m³)",
     "electricTitle": "Kuryente (kWh)",
     "vsLast": "kumpara noong nakaraang cycle",
-    "used": "Nagamit"
+    "used": "Nagamit",
+    "readingsTitle": "Mga pagbasa ng metro",
+    "readingsSub": "Litrato ng metro na kinuha ng staff kada pagbasa.",
+    "noPhoto": "Walang litrato"
   },
   "profile": {
     "title": "Profile",

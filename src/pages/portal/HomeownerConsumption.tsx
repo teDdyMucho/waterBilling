@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   Bar,
@@ -9,14 +10,22 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { Droplets, TrendingDown, TrendingUp, Zap } from 'lucide-react'
+import { Droplets, Image as ImageIcon, TrendingDown, TrendingUp, Zap } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
-import { fetchMyConsumption, type ConsumptionPoint } from '@/features/readings/readings-api'
+import {
+  fetchMyConsumption,
+  fetchMyReadings,
+  getSignedPhotoUrl,
+  type ConsumptionPoint,
+  type MyReadingRow,
+} from '@/features/readings/readings-api'
 import { Card, CardHeader, CardBody } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
 import { useT } from '@/hooks/useT'
-import { consumption as fmtCons, percentDelta } from '@/lib/format'
+import { consumption as fmtCons, percentDelta, shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
 
 // Monochrome — dalawang neutral na shade para may subtle na pagkakaiba.
@@ -66,9 +75,86 @@ export default function HomeownerConsumption() {
             color={ELECTRIC}
             utility="electric"
           />
+
+          <ReadingsHistory />
         </div>
       )}
     </AppShell>
+  )
+}
+
+/** Listahan ng mga pagbasa + litrato ng metro na kinuha ng staff. */
+function ReadingsHistory() {
+  const { t } = useT()
+  const { data } = useQuery({ queryKey: ['my-readings'], queryFn: fetchMyReadings })
+  const rows = data ?? []
+  const [photo, setPhoto] = useState<string | null>(null)
+  const [loading, setLoading] = useState<string | null>(null)
+
+  if (rows.length === 0) return null
+
+  async function view(r: MyReadingRow) {
+    if (!r.photoPath) return
+    setLoading(r.id)
+    try {
+      setPhoto(await getSignedPhotoUrl(r.photoPath))
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader title={t('consumption.readingsTitle')} description={t('consumption.readingsSub')} />
+      <CardBody>
+        <ul className="divide-y divide-slate-100">
+          {rows.map((r) => (
+            <li key={r.id} className="flex items-center justify-between gap-3 py-2.5">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span
+                  className={cn(
+                    'grid size-9 shrink-0 place-items-center rounded-lg ring-1 ring-inset',
+                    r.utility === 'water'
+                      ? 'bg-water-50 text-water-700 ring-water-100'
+                      : 'bg-power-50 text-power-700 ring-power-100',
+                  )}
+                >
+                  {r.utility === 'water' ? <Droplets className="size-4" /> : <Zap className="size-4" />}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-900">
+                    {r.code} · {r.utility === 'water' ? t('properties.water') : t('properties.electric')}
+                  </p>
+                  <p className="truncate text-xs text-slate-500">
+                    {t('consumption.used')}: {fmtCons(r.consumption, r.utility)}
+                    {r.readAt ? ` · ${shortDate(r.readAt)}` : ''}
+                  </p>
+                </div>
+              </div>
+              {r.photoPath ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  loading={loading === r.id}
+                  onClick={() => view(r)}
+                  iconLeft={<ImageIcon className="size-4" />}
+                >
+                  {t('readings.viewPhoto')}
+                </Button>
+              ) : (
+                <span className="shrink-0 text-xs text-slate-400">{t('consumption.noPhoto')}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </CardBody>
+
+      <Modal open={Boolean(photo)} onClose={() => setPhoto(null)} title={t('readings.viewPhoto')} size="lg">
+        {photo && (
+          <img src={photo} alt="meter" className="max-h-[70vh] w-full rounded-input object-contain" />
+        )}
+      </Modal>
+    </Card>
   )
 }
 

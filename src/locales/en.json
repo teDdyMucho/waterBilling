@@ -374,7 +374,10 @@
     "waterTitle": "Water (m³)",
     "electricTitle": "Electricity (kWh)",
     "vsLast": "vs. last cycle",
-    "used": "Used"
+    "used": "Used",
+    "readingsTitle": "Meter readings",
+    "readingsSub": "Meter photos taken by staff for each reading.",
+    "noPhoto": "No photo"
   },
   "profile": {
     "title": "Profile",
