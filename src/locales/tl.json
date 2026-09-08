@@ -517,6 +517,7 @@
 
     "worklistTitle": "Pagbasa ng Metro",
     "worklistSub": "Mag-encode ng reading para sa active cycle. Kailangan ng litrato.",
+    "noCycleButUnknown": "Walang bukas na billing cycle. Puwede ka pa ring mag-encode ng Unknown o C.O. Subdivision — ang admin ang magtatalaga nito mamaya.",
     "noActiveCycle": "Walang bukas na billing cycle. Hilingin sa admin na magbukas.",
     "activeCycle": "Active na cycle",
     "progress": "{done} sa {total} nabasa",

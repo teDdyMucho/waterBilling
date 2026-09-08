@@ -46,8 +46,12 @@ export function EncodeReadingModal({
   onClose: () => void
   /** Lahat ng aktibong metro ng iisang property (water at/o electric). */
   items: WorklistItem[]
-  /** Cycle na pagsasave-an. Galing sa item mismo (isa kada property). */
-  cycle: { id: string; code: string }
+  /**
+   * Cycle na pagsasave-an — galing sa item mismo (isa kada property).
+   * NULL kapag Unknown / C.O. at walang bukas na cycle: ang admin ang
+   * magtatakda nito sa pag-assign.
+   */
+  cycle: { id: string; code: string } | null
   /**
    * Opsyonal na pampili ng property, ipinapakita sa itaas ng form.
    * Kapag walang laman ang `items`, ito lang ang lalabas — kaya puwedeng
@@ -153,12 +157,12 @@ export function EncodeReadingModal({
       // (compress happens inside uploadMeterPhoto)
       setPhase('uploading')
       const folder = item ? item.meter.id : `unassigned/${special!.kind}`
-      const path = await uploadMeterPhoto(draft.file, cycle.code, folder)
+      const path = await uploadMeterPhoto(draft.file, cycle?.code || 'unassigned', folder)
 
       if (!item) {
         // Walang metro — sa inbox ng admin ito papasok, hindi bill.
         await createUnassignedReading({
-          cycleId: cycle.id,
+          cycleId: cycle?.id ?? null,
           kind: special!.kind,
           utility: special!.utility,
           previous: prevBlank ? null : Number(prevText),
@@ -172,7 +176,7 @@ export function EncodeReadingModal({
 
       await createReading({
         meterId: item.meter.id,
-        cycleId: cycle.id,
+        cycleId: cycle!.id,
         present: presentNum,
         previous: prevBlank ? null : Number(prevText),
         photoPath: path,
@@ -181,7 +185,7 @@ export function EncodeReadingModal({
       })
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['worklist', cycle.id] })
+      if (cycle) qc.invalidateQueries({ queryKey: ['worklist', cycle.id] })
       qc.invalidateQueries({ queryKey: ['open-worklist'] })
       qc.invalidateQueries({ queryKey: ['property-readings'] })
       // Kung sa inbox ng admin ito napunta, i-refresh din ang bilang doon.

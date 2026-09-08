@@ -517,6 +517,7 @@
 
     "worklistTitle": "Meter Readings",
     "worklistSub": "Encode readings for the active cycle. A photo is required.",
+    "noCycleButUnknown": "No open billing cycle. You can still encode Unknown or C.O. Subdivision readings — the admin assigns them later.",
     "noActiveCycle": "No open billing cycle. Ask the admin to open one.",
     "activeCycle": "Active cycle",
     "progress": "{done} of {total} read",

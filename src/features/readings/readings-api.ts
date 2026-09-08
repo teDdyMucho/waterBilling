@@ -368,7 +368,8 @@ export async function fetchLatestReading(meterId: string): Promise<MeterReading 
 // ---- Unassigned readings (Unknown / C.O. Subdivision) ---------------
 
 export interface CreateUnassignedInput {
-  cycleId: string
+  /** NULL kapag walang bukas na cycle — ang admin ang magtatakda (0027). */
+  cycleId: string | null
   kind: UnassignedKind
   utility: UtilityType
   meterNumber?: string | null

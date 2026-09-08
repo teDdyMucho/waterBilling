@@ -5,6 +5,7 @@ import {
   assignUnassignedReading,
   discardUnassignedReading,
   fetchAllPendingUnassigned,
+  fetchOpenWorklist,
   fetchWorklist,
   getSignedPhotoUrl,
   type PendingUnassigned,
@@ -87,11 +88,13 @@ function Row({
   const water = row.utility_type === 'water'
   const Icon = water ? Droplets : Zap
 
-  // Ang mga metrong puwedeng pagtalagaan — galing sa worklist ng cycle
-  // na pinagmulan ng basang ito.
+  // Ang mga metrong puwedeng pagtalagaan. Kapag walang cycle ang basa
+  // (Unknown na walang bukas na cycle), lahat ng aktibong metro ang
+  // pagpipilian — ang cycle ay kukunin ng RPC mula sa napiling metro.
   const { data: worklist } = useQuery({
-    queryKey: ['worklist', row.billing_cycle_id],
-    queryFn: () => fetchWorklist(row.billing_cycle_id),
+    queryKey: ['assignable-meters', row.billing_cycle_id ?? 'none'],
+    queryFn: () =>
+      row.billing_cycle_id ? fetchWorklist(row.billing_cycle_id) : fetchOpenWorklist(),
   })
 
   useEffect(() => {
@@ -106,7 +109,7 @@ function Row({
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['unassigned'] })
-    qc.invalidateQueries({ queryKey: ['worklist', row.billing_cycle_id] })
+    qc.invalidateQueries({ queryKey: ['assignable-meters'] })
     qc.invalidateQueries({ queryKey: ['open-worklist'] })
     qc.invalidateQueries({ queryKey: ['cycle-stats'] })
   }

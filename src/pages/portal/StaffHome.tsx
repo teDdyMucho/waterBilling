@@ -63,7 +63,7 @@ export default function StaffHome() {
         <div className="grid gap-3 sm:grid-cols-2">
           <button
             type="button"
-            disabled={!hasOpen}
+            
             onClick={() => setUtility('water')}
             className="flex items-center gap-4 rounded-card border border-water-100 bg-water-50 p-5 text-left transition-colors hover:border-water-700/30 disabled:opacity-50"
           >
@@ -81,7 +81,7 @@ export default function StaffHome() {
 
           <button
             type="button"
-            disabled={!hasOpen}
+            
             onClick={() => setUtility('electric')}
             className="flex items-center gap-4 rounded-card border border-power-100 bg-power-50 p-5 text-left transition-colors hover:border-power-700/30 disabled:opacity-50"
           >
@@ -100,7 +100,7 @@ export default function StaffHome() {
 
         {!hasOpen && (
           <Alert tone="info" className="mt-4">
-            {t('readings.noActiveCycle')}
+            {t('readings.noCycleButUnknown')}
           </Alert>
         )}
       </div>
@@ -128,14 +128,14 @@ export default function StaffHome() {
         <strong> hindi ang kanilang account.</strong>
       </Alert>
 
-      {utility && hasOpen && (
+      {utility && (
         <EncodeReadingModal
           open
           onClose={closeEncoder}
           items={selectedItems}
-          // Ang cycle ng napiling property; kung wala pa, ang una sa listahan
-          // (kailangan lang ito ng upload path bago mapili).
-          cycle={selectedItems[0]?.cycle ?? forUtility[0]?.cycle ?? list[0].cycle}
+          // Ang cycle ng napiling property. NULL kapag Unknown / C.O. —
+          // walang property, kaya walang cycle; ang admin ang magtatakda.
+          cycle={selectedItems[0]?.cycle ?? null}
           picker={
             <PropertyPicker items={forUtility} value={propertyId} onChange={setPropertyId} />
           }
