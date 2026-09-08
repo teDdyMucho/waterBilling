@@ -4,7 +4,6 @@ import { Check, Image as ImageIcon, Search, ShieldCheck, X } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
 import {
   confirmPayment,
-  endorsePayment,
   fetchPaymentsInStatuses,
   getProofUrl,
   rejectPayment,
@@ -40,8 +39,10 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
   const [search, setSearch] = useState('')
   const [tab, setTab] = useState<'pending' | 'confirmed'>('pending')
 
-  const statuses: PaymentStatus[] =
-    mode === 'staff' ? ['submitted'] : ['submitted', 'endorsed', 'confirmed']
+  // Pareho na ang nakikita: ang staff ay tumitingin lang kung natanggap
+  // at nakumpirma na ba ng admin. ('endorsed' = lumang rekord bago inalis
+  // ang endorsement.)
+  const statuses: PaymentStatus[] = ['submitted', 'endorsed', 'confirmed']
   const { data, isLoading } = useQuery({
     queryKey: ['payment-queue', mode],
     queryFn: () => fetchPaymentsInStatuses(statuses),
@@ -54,14 +55,6 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
   }
   const onErr = (e: unknown) => setError(e instanceof Error ? e.message : t('common.somethingWrong'))
 
-  const mEndorse = useMutation({
-    mutationFn: (id: string) => endorsePayment(id, ''),
-    onSuccess: () => {
-      setNote(t('payments.endorsedOk'))
-      invalidate()
-    },
-    onError: onErr,
-  })
   const mConfirm = useMutation({
     mutationFn: (id: string) => confirmPayment(id),
     onSuccess: (or) => {
@@ -88,11 +81,9 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
   const all = data ?? []
   const pendingCount = all.filter((p) => p.status !== 'confirmed').length
   const confirmedCount = all.filter((p) => p.status === 'confirmed').length
-  // Admin: hatiin per tab (di pa confirmed vs confirmed na). Staff: buo.
-  const scoped =
-    mode === 'admin'
-      ? all.filter((p) => (tab === 'confirmed' ? p.status === 'confirmed' : p.status !== 'confirmed'))
-      : all
+  const scoped = all.filter((p) =>
+    tab === 'confirmed' ? p.status === 'confirmed' : p.status !== 'confirmed',
+  )
   const q = search.trim().toLowerCase()
   const rows = q
     ? scoped.filter((p) =>
@@ -103,7 +94,7 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
           .includes(q),
       )
     : scoped
-  const busy = mEndorse.isPending || mConfirm.isPending || mReject.isPending
+  const busy = mConfirm.isPending || mReject.isPending
 
   return (
     <AppShell>
@@ -135,8 +126,7 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
         </Alert>
       )}
 
-      {mode === 'admin' && (
-        <div className="mb-4 flex flex-wrap gap-1.5">
+      <div className="mb-4 flex flex-wrap gap-1.5">
           {(['pending', 'confirmed'] as const).map((tb) => (
             <button
               key={tb}
@@ -152,10 +142,9 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
               {tb === 'pending'
                 ? `${t('payments.tabPending')} (${pendingCount})`
                 : `${t('payments.tabConfirmed')} (${confirmedCount})`}
-            </button>
-          ))}
-        </div>
-      )}
+          </button>
+        ))}
+      </div>
 
       <div className="mb-4 sm:max-w-xs">
         <Input
@@ -218,7 +207,7 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
                   <Button size="sm" variant="outline" onClick={() => openProof(p.proof_path)} iconLeft={<ImageIcon className="size-4" />}>
                     {t('payments.viewProof')}
                   </Button>
-                  {p.status !== 'confirmed' && (
+                  {p.status !== 'confirmed' && mode === 'admin' && (
                     <>
                       <Button
                         size="sm"
@@ -235,34 +224,24 @@ function PaymentQueue({ mode }: { mode: 'staff' | 'admin' }) {
                       >
                         {t('payments.reject')}
                       </Button>
-                      {p.status === 'submitted' ? (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          disabled={busy}
-                          onClick={() => {
-                            setError(null)
-                            mEndorse.mutate(p.id)
-                          }}
-                          iconLeft={<ShieldCheck className="size-4" />}
-                        >
-                          {t('payments.endorse')}
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="success"
-                          disabled={busy || mode === 'staff'}
-                          onClick={() => {
-                            setError(null)
-                            mConfirm.mutate(p.id)
-                          }}
-                          iconLeft={<Check className="size-4" />}
-                        >
-                          {t('payments.confirm')}
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="success"
+                        disabled={busy}
+                        onClick={() => {
+                          setError(null)
+                          mConfirm.mutate(p.id)
+                        }}
+                        iconLeft={<Check className="size-4" />}
+                      >
+                        {t('payments.confirm')}
+                      </Button>
                     </>
+                  )}
+                  {p.status !== 'confirmed' && mode === 'staff' && (
+                    <span className="self-center text-xs text-slate-500">
+                      {t('payments.waitingAdmin')}
+                    </span>
                   )}
                 </div>
               </li>

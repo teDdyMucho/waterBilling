@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PageLoader } from '@/components/ui/Spinner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -40,7 +40,6 @@ import AdminAccounts from '@/pages/portal/AdminAccounts'
 import { AdminProperties, AdminPropertyDetail } from '@/pages/portal/AdminProperties'
 import { StaffProperties, StaffPropertyDetail } from '@/pages/portal/StaffProperties'
 import AdminCycles from '@/pages/portal/AdminCycles'
-import AdminReview from '@/pages/portal/AdminReview'
 import StaffWorklist from '@/pages/portal/StaffWorklist'
 import StaffBills from '@/pages/portal/StaffBills'
 import PaymentGuide from '@/pages/portal/PaymentGuide'
@@ -122,7 +121,8 @@ export default function App() {
                   <Route path="/admin/properties" element={<AdminProperties />} />
                   <Route path="/admin/properties/:id" element={<AdminPropertyDetail />} />
                   <Route path="/admin/cycles" element={<AdminCycles />} />
-                  <Route path="/admin/review" element={<AdminReview />} />
+                  {/* Pinagsama na sa Concerns — nandoon na ang flagged readings */}
+                  <Route path="/admin/review" element={<Navigate to="/admin/concerns" replace />} />
                   <Route path="/admin/rates" element={<AdminRates />} />
                   <Route path="/admin/concerns" element={<AdminConcerns />} />
                   <Route path="/admin/concerns/:id" element={<AdminConcerns />} />

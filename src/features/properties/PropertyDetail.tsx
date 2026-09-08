@@ -29,7 +29,7 @@ import { Select } from '@/components/ui/Field'
 import { Spinner } from '@/components/ui/Spinner'
 import { PageLoader } from '@/components/ui/Spinner'
 import { useT } from '@/hooks/useT'
-import { lotLabel, meterReading, shortDate } from '@/lib/format'
+import { lotLabel, shortDate } from '@/lib/format'
 import type { Meter, PropertyStatus, UtilityType } from '@/types/domain'
 
 const STATUS_TONE: Record<PropertyStatus, BadgeTone> = {
@@ -303,8 +303,7 @@ function MeterSlot({
         </p>
         {meter ? (
           <p className="truncate text-xs text-slate-500">
-            {meter.meter_number ?? '—'} · {t('properties.initialReading')}:{' '}
-            {meterReading(meter.initial_reading, meter.digits)}
+            {meter.meter_number ?? '—'}
             {meter.installed_at && ` · ${shortDate(meter.installed_at)}`}
           </p>
         ) : (

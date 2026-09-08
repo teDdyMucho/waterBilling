@@ -98,6 +98,11 @@ export type ReadingStatus = 'draft' | 'for_review' | 'verified' | 'rejected'
 export interface BillingCycle {
   id: string
   code: string
+  /** Ang property na sinasaklaw. NULL = lumang cycle na pang-lahat. */
+  property_id: string | null
+  /** Naka-embed kapag hiningi — para maipakita kung kanino ang cycle. */
+  property?: { block: string; lot: string } | null
+  ownerName?: string | null
   reading_start: string | null
   reading_end: string | null
   bill_date: string | null
@@ -128,12 +133,39 @@ export interface MeterReading {
 
 /** Isang metro sa worklist — kasama ang property + reading (kung meron na). */
 export interface WorklistItem {
+  /** Aling cycle ang binabasa — isa kada property mula migration 0026. */
+  cycle: { id: string; code: string }
   meter: Meter
   property: Pick<Property, 'id' | 'block' | 'lot' | 'phase'>
   ownerName: string | null
   reading: MeterReading | null
   /** Pangalan ng staff/admin na nag-encode ng reading (kung meron). */
   readerName: string | null
+}
+
+// ---- Readings na walang metro pa (Unknown / C.O. Subdivision) ------
+
+export type UnassignedKind = 'unknown' | 'co_subdivision'
+export type UnassignedStatus = 'pending' | 'assigned' | 'discarded'
+
+export interface UnassignedReading {
+  id: string
+  billing_cycle_id: string
+  kind: UnassignedKind
+  utility_type: UtilityType
+  meter_number: string | null
+  previous_reading: number | null
+  present_reading: number
+  photo_path: string
+  remarks: string | null
+  read_by: string | null
+  status: UnassignedStatus
+  assigned_meter_id: string | null
+  assigned_reading_id: string | null
+  resolved_by: string | null
+  resolved_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 // ---- Phase 4: Rates & Bills ----------------------------------------
@@ -198,6 +230,14 @@ export interface BillItem {
   bill_id: string
   item_type: BillItemType
   meter_reading_id: string | null
+  /** Ang basang pinagmulan nito — kasama ang litrato (kung na-embed). */
+  reading?: {
+    previous_reading: number
+    present_reading: number
+    consumption: number
+    status: ReadingStatus
+    photo_path: string
+  } | null
   rate_id: string | null
   quantity: number | null
   unit_price: number | null

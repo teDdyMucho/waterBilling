@@ -87,12 +87,17 @@ function PaymentCard({
             />
             {!rejected && !voided && (
               <>
-                <Step
-                  done={Boolean(p.endorsed_at)}
-                  icon={<ShieldCheck className="size-3.5" />}
-                  label={t('payments.tl_endorsed')}
-                  date={p.endorsed_at}
-                />
+                {/* Ang hakbang ng staff ay ipinapakita LANG sa mga lumang
+                    bayad na dumaan pa sa endorsement. Wala na ito ngayon —
+                    diretso na sa admin (migration 0024). */}
+                {p.endorsed_at && (
+                  <Step
+                    done
+                    icon={<ShieldCheck className="size-3.5" />}
+                    label={t('payments.tl_endorsed')}
+                    date={p.endorsed_at}
+                  />
+                )}
                 <Step
                   done={p.status === 'confirmed'}
                   icon={<CheckCircle2 className="size-3.5" />}

@@ -28,19 +28,21 @@ export function MeterFormModal({
   const qc = useQueryClient()
   const [form, setForm] = useState({
     meter_number: '',
-    initial_reading: '0',
-    digits: '5',
     installed_at: '',
   })
   const [error, setError] = useState<string | null>(null)
+
+  // Hindi na ini-input ang initial_reading at digits — default na lang (0 / 5).
+  // Sa EDIT, pinapanatili ang naka-save na halaga para hindi ma-zero ang
+  // baseline ng metrong may bill na.
+  const initialReading = editing?.initial_reading ?? 0
+  const digits = editing?.digits ?? replacing?.digits ?? 5
 
   useEffect(() => {
     if (open) {
       setError(null)
       setForm({
         meter_number: editing?.meter_number ?? '',
-        initial_reading: String(editing?.initial_reading ?? 0),
-        digits: String(editing?.digits ?? replacing?.digits ?? 5),
         installed_at: editing?.installed_at ?? '',
       })
     }
@@ -55,8 +57,8 @@ export function MeterFormModal({
         await replaceMeter({
           oldMeterId: replacing.id,
           meterNumber: form.meter_number.trim() || null,
-          initialReading: Number(form.initial_reading) || 0,
-          digits: Number(form.digits) || 5,
+          initialReading: 0,
+          digits,
           installedAt: form.installed_at || null,
         })
         return
@@ -65,8 +67,8 @@ export function MeterFormModal({
         property_id: propertyId,
         utility_type: utility,
         meter_number: form.meter_number.trim() || null,
-        initial_reading: Number(form.initial_reading) || 0,
-        digits: Number(form.digits) || 5,
+        initial_reading: initialReading,
+        digits,
         installed_at: form.installed_at || null,
       }
       if (editing) await updateMeter(editing.id, payload)
@@ -126,21 +128,6 @@ export function MeterFormModal({
           onChange={set('meter_number')}
           placeholder="e.g. WM-001234"
         />
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            type="number"
-            step="0.01"
-            label={t('properties.initialReading')}
-            value={form.initial_reading}
-            onChange={set('initial_reading')}
-          />
-          <Input
-            type="number"
-            label={t('properties.digits')}
-            value={form.digits}
-            onChange={set('digits')}
-          />
-        </div>
         <Input
           type="date"
           label={t('properties.installedAt')}

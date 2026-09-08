@@ -11,6 +11,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
+import { ReadingReviewPanel, useReviewCount } from '@/pages/portal/AdminReview'
 import { useT } from '@/hooks/useT'
 import { dateTime } from '@/lib/format'
 import { cn } from '@/lib/cn'
@@ -27,11 +28,15 @@ const TONE: Record<ThreadStatus, BadgeTone> = {
 type Filter = 'all' | 'open' | 'escalated' | 'resolved'
 
 /** Ginagamit ng staff (base='/staff/concerns') at admin (base='/admin/concerns'). */
-export function ConcernsInbox({ base }: { base: string }) {
+export function ConcernsInbox({ base, withReview = false }: { base: string; withReview?: boolean }) {
   const { t } = useT()
   const { id } = useParams()
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
+  // Sa admin, kasama rito ang flagged readings — iisang inbox lang ang
+  // binabantayan, hindi dalawang magkahiwalay na pahina.
+  const [tab, setTab] = useState<'concerns' | 'review'>('concerns')
+  const reviewCount = useReviewCount()
 
   const { data, isLoading } = useQuery({ queryKey: ['threads'], queryFn: fetchAllThreads })
   const threads = data ?? []
@@ -64,11 +69,40 @@ export function ConcernsInbox({ base }: { base: string }) {
   }
 
   const filters: Filter[] = ['all', 'open', 'escalated', 'resolved']
+  const onReview = withReview && tab === 'review'
 
   return (
     <AppShell>
       <PageHeader title={t('messaging.inboxTitle')} description={t('messaging.inboxSub')} />
 
+      {withReview && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          {(['concerns', 'review'] as const).map((tb) => (
+            <button
+              key={tb}
+              type="button"
+              onClick={() => setTab(tb)}
+              className={cn(
+                'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                tab === tb
+                  ? 'bg-brand-700 text-white'
+                  : 'bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50',
+              )}
+            >
+              {tb === 'concerns'
+                ? t('messaging.inboxTitle')
+                : reviewCount > 0
+                  ? `${t('readings.reviewTitle')} (${reviewCount})`
+                  : t('readings.reviewTitle')}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {onReview && <ReadingReviewPanel />}
+
+      {!onReview && (
+      <>
       <div className="mb-3 sm:max-w-xs">
         <Input
           placeholder={t('messaging.search')}
@@ -136,6 +170,8 @@ export function ConcernsInbox({ base }: { base: string }) {
           </ul>
         </Card>
       )}
+      </>
+      )}
     </AppShell>
   )
 }
@@ -144,5 +180,5 @@ export function StaffConcerns() {
   return <ConcernsInbox base="/staff/concerns" />
 }
 export function AdminConcerns() {
-  return <ConcernsInbox base="/admin/concerns" />
+  return <ConcernsInbox base="/admin/concerns" withReview />
 }

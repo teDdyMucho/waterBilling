@@ -1,263 +1,238 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import {
-  AlertTriangle,
-  CheckCircle2,
-  ChevronRight,
-  Droplets,
-  Search,
-  Zap,
-} from 'lucide-react'
+import { ArrowLeft, ChevronRight, Droplets, Search, Zap } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
 import { EncodeReadingModal } from '@/features/readings/EncodeReadingModal'
-import { fetchActiveCycle, fetchCycles, fetchWorklist } from '@/features/readings/readings-api'
+import { fetchPropertyReadings } from '@/features/readings/readings-api'
+import { fetchProperties } from '@/features/properties/properties-api'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { Spinner } from '@/components/ui/Spinner'
 import { useT } from '@/hooks/useT'
-import { lotLabel, meterReading } from '@/lib/format'
+import { lotLabel } from '@/lib/format'
 import { cn } from '@/lib/cn'
-import type { WorklistItem } from '@/types/domain'
+import type { PropertyWithRelations, WorklistItem } from '@/types/domain'
 
-type Filter = 'all' | 'unread' | 'done' | 'flagged'
+/** Water muna bago electric — pare-pareho ang ayos sa buong app. */
+function byUtility(a: WorklistItem, b: WorklistItem) {
+  return a.meter.utility_type === b.meter.utility_type ? 0 : a.meter.utility_type === 'water' ? -1 : 1
+}
+
+function ownerOf(p: PropertyWithRelations) {
+  return p.owners?.find((o) => !o.end_date)?.profile?.full_name ?? null
+}
 
 export default function StaffWorklist() {
   const { t } = useT()
+  // Hakbang 1: pumili ng homeowner. Hakbang 2: ang buong kasaysayan niya.
+  const [propertyId, setPropertyId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState<Filter>('all')
-  const [active, setActive] = useState<WorklistItem | null>(null)
+  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
 
-  const { data: cycle, isLoading: cycleLoading } = useQuery({
-    queryKey: ['active-cycle'],
-    queryFn: fetchActiveCycle,
-  })
-  const { data: cycles, isLoading: cyclesLoading } = useQuery({
-    queryKey: ['cycles'],
-    queryFn: fetchCycles,
-  })
-  // Kung walang bukas na cycle, ipakita pa rin ang pinakabagong cycle bilang
-  // read-only na history — para manatiling nakikita ang mga na-encode na.
-  const displayCycle = cycle ?? cycles?.[0] ?? null
-  const readOnly = !cycle && Boolean(displayCycle)
-  const { data: items, isLoading } = useQuery({
-    queryKey: ['worklist', displayCycle?.id],
-    queryFn: () => fetchWorklist(displayCycle!.id),
-    enabled: Boolean(displayCycle?.id),
+  const { data: properties, isLoading: propsLoading } = useQuery({
+    queryKey: ['properties'],
+    queryFn: fetchProperties,
   })
 
-  const list = items ?? []
-  const done = list.filter((i) => i.reading).length
-  const total = list.length
-  const pct = total ? Math.round((done / total) * 100) : 0
+  const { data: groups, isLoading } = useQuery({
+    queryKey: ['property-readings', propertyId],
+    queryFn: () => fetchPropertyReadings(propertyId!),
+    enabled: Boolean(propertyId),
+  })
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return list.filter((i) => {
-      if (filter === 'unread' && i.reading) return false
-      if (filter === 'done' && (!i.reading || i.reading.status === 'for_review')) return false
-      if (filter === 'flagged' && i.reading?.status !== 'for_review') return false
-      if (!q) return true
-      return (
-        `${i.property.block} ${i.property.lot}`.toLowerCase().includes(q) ||
-        (i.ownerName ?? '').toLowerCase().includes(q)
-      )
-    })
-  }, [list, search, filter])
+  const selected = (properties ?? []).find((p) => p.id === propertyId) ?? null
+  const rows = groups ?? []
 
-  // Grupo ayon sa block
-  const groups = useMemo(() => {
-    const map = new Map<string, WorklistItem[]>()
-    for (const i of filtered) {
-      const k = i.property.block
-      if (!map.has(k)) map.set(k, [])
-      map.get(k)!.push(i)
-    }
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
-  }, [filtered])
+  const q = search.trim().toLowerCase()
+  const propRows = (properties ?? []).filter((p) =>
+    !q ? true : `${lotLabel(p.block, p.lot)} ${ownerOf(p) ?? ''}`.toLowerCase().includes(q),
+  )
 
-  const filters: Filter[] = ['all', 'unread', 'done', 'flagged']
+  // Ang binuksang cycle sa modal.
+  const activeGroup = rows.find((x) => x.cycle.id === activeCycleId) ?? null
+  const activeEditable =
+    activeGroup?.cycle.status === 'open' || activeGroup?.cycle.status === 'reading'
+  const activeItems = useMemo(
+    () => (activeGroup ? [...activeGroup.items].sort(byUtility) : []),
+    [activeGroup],
+  )
 
-  if (cycleLoading || cyclesLoading) {
-    return (
-      <AppShell>
-        <div className="flex items-center justify-center gap-2 py-20 text-sm text-slate-500">
-          <Spinner className="size-4" /> {t('common.loading')}
-        </div>
-      </AppShell>
-    )
-  }
-
-  if (!displayCycle) {
+  // ------------------------------------------------------------------
+  //  Hakbang 1 — listahan ng homeowner
+  // ------------------------------------------------------------------
+  if (!propertyId) {
     return (
       <AppShell>
         <PageHeader title={t('readings.worklistTitle')} description={t('readings.worklistSub')} />
-        <Alert tone="info">{t('readings.noActiveCycle')}</Alert>
-      </AppShell>
-    )
-  }
 
-  return (
-    <AppShell>
-      <PageHeader
-        title={t('readings.worklistTitle')}
-        description={t('readings.worklistSub')}
-        action={
-          <Badge tone={readOnly ? 'neutral' : 'info'}>{`${t('readings.activeCycle')}: ${displayCycle.code}`}</Badge>
-        }
-      />
-
-      {readOnly && (
-        <Alert tone="info" className="mb-4">
-          {t('readings.viewingPastCycle').replace('{code}', displayCycle.code)}
-        </Alert>
-      )}
-
-      {/* Progress */}
-      <Card className="mb-4 p-4 sm:p-5">
-        <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="font-medium text-slate-700">
-            {t('readings.progress').replace('{done}', String(done)).replace('{total}', String(total))}
-          </span>
-          <span className="tabular font-semibold text-brand-700">{pct}%</span>
-        </div>
-        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-          <div className="h-full rounded-full bg-brand-600 transition-all" style={{ width: `${pct}%` }} />
-        </div>
-      </Card>
-
-      {/* Controls */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex-1 sm:max-w-xs">
+        <div className="mb-3 sm:max-w-sm">
           <Input
-            placeholder={t('readings.searchWorklist')}
+            placeholder={t('readings.searchProperty')}
             iconLeft={<Search className="size-4" />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {filters.map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFilter(f)}
-              className={cn(
-                'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
-                filter === f
-                  ? 'bg-brand-700 text-white'
-                  : 'bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50',
-              )}
-            >
-              {t(`readings.filter${f.charAt(0).toUpperCase() + f.slice(1)}`)}
-            </button>
-          ))}
-        </div>
+
+        {propsLoading ? (
+          <div className="flex items-center justify-center gap-2 py-16 text-sm text-slate-500">
+            <Spinner className="size-4" /> {t('common.loading')}
+          </div>
+        ) : (
+          <Card>
+            {propRows.length === 0 ? (
+              <p className="p-8 text-center text-sm text-slate-500">{t('readings.noMatches')}</p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {propRows.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onClick={() => setPropertyId(p.id)}
+                      className="flex w-full flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 sm:flex-nowrap sm:px-5"
+                    >
+                      <div className="min-w-0 flex-1 basis-40">
+                        <p className="truncate font-semibold text-slate-900">
+                          {lotLabel(p.block, p.lot)}
+                        </p>
+                        <p className="truncate text-sm text-slate-500">{ownerOf(p) ?? '—'}</p>
+                      </div>
+                      <div className="flex shrink-0 gap-1.5">
+                        {p.meters
+                          ?.filter((m) => m.status === 'active')
+                          .map((m) => {
+                            const water = m.utility_type === 'water'
+                            const Icon = water ? Droplets : Zap
+                            return (
+                              <span
+                                key={m.id}
+                                title={water ? t('properties.water') : t('properties.electric')}
+                                className={cn(
+                                  'grid size-6 place-items-center rounded-md ring-1 ring-inset',
+                                  water
+                                    ? 'bg-water-50 text-water-700 ring-water-100'
+                                    : 'bg-power-50 text-power-700 ring-power-100',
+                                )}
+                              >
+                                <Icon className="size-3.5" />
+                              </span>
+                            )
+                          })}
+                      </div>
+                      <ChevronRight className="hidden size-5 shrink-0 text-slate-300 sm:block" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        )}
+      </AppShell>
+    )
+  }
+
+  // ------------------------------------------------------------------
+  //  Hakbang 2 — buong kasaysayan ng napiling homeowner
+  // ------------------------------------------------------------------
+  return (
+    <AppShell>
+      <PageHeader title={t('readings.worklistTitle')} description={t('readings.worklistSub')} />
+
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={() => {
+            setPropertyId(null)
+            setActiveCycleId(null)
+          }}
+          className="mb-1 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900"
+        >
+          <ArrowLeft className="size-4" />
+          {t('readings.backToProperties')}
+        </button>
+        {selected && (
+          <>
+            <p className="text-lg font-semibold text-slate-900">
+              {lotLabel(selected.block, selected.lot)}
+            </p>
+            <p className="text-sm text-slate-500">{ownerOf(selected) ?? '—'}</p>
+          </>
+        )}
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center gap-2 py-16 text-sm text-slate-500">
           <Spinner className="size-4" /> {t('common.loading')}
         </div>
+      ) : rows.length === 0 ? (
+        <Alert tone="info">{t('readings.noActiveCycle')}</Alert>
       ) : (
-        <div className="space-y-5">
-          {groups.map(([block, rows]) => (
-            <div key={block}>
-              <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Block {block}
-              </p>
-              <Card>
-                <ul className="divide-y divide-slate-100">
-                  {rows.map((i) => (
-                    <WorklistRow key={i.meter.id} item={i} readOnly={readOnly} onOpen={() => setActive(i)} />
-                  ))}
-                </ul>
-              </Card>
-            </div>
-          ))}
-        </div>
+        <Card>
+          <ul className="divide-y divide-slate-100">
+            {rows.map((g) => {
+              // Bukas = puwedeng i-encode. Sarado = matitingnan pa rin —
+              // nandoon ang litrato at ang basang naging batayan ng bill.
+              const editable = g.cycle.status === 'open' || g.cycle.status === 'reading'
+              const items = [...g.items].sort(byUtility)
+              const statusKey = `readings.status${g.cycle.status.charAt(0).toUpperCase()}${g.cycle.status.slice(1)}`
+              return (
+                <li key={g.cycle.id}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCycleId(g.cycle.id)}
+                    className="flex w-full flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 sm:flex-nowrap sm:px-5"
+                  >
+                    <div className="min-w-0 flex-1 basis-44">
+                      <p className="truncate font-semibold text-slate-900">{g.cycle.code}</p>
+                      <p className="text-xs text-slate-500">{t(statusKey)}</p>
+                    </div>
+
+                    {/* Isang chip kada metro — kita agad ang kulang */}
+                    <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:justify-end">
+                      {items.map((i) => {
+                        const water = i.meter.utility_type === 'water'
+                        const Icon = water ? Droplets : Zap
+                        const r = i.reading
+                        const tone = r
+                          ? r.status === 'for_review'
+                            ? 'warning'
+                            : 'success'
+                          : 'neutral'
+                        const label = r
+                          ? r.status === 'for_review'
+                            ? t('readings.flagged')
+                            : t('readings.done')
+                          : editable
+                            ? t('readings.encode')
+                            : t('readings.notRead')
+                        return (
+                          <Badge key={i.meter.id} tone={tone}>
+                            <Icon className="mr-1 size-3" />
+                            {label}
+                          </Badge>
+                        )
+                      })}
+                    </div>
+                    <ChevronRight className="hidden size-5 shrink-0 text-slate-300 sm:block" />
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </Card>
       )}
 
-      {active && !readOnly && (
-        <EncodeReadingModal open onClose={() => setActive(null)} item={active} cycle={displayCycle} />
+      {activeItems.length > 0 && (
+        <EncodeReadingModal
+          open
+          onClose={() => setActiveCycleId(null)}
+          items={activeItems}
+          cycle={activeItems[0].cycle}
+          readOnly={!activeEditable}
+        />
       )}
     </AppShell>
-  )
-}
-
-function WorklistRow({
-  item,
-  readOnly,
-  onOpen,
-}: {
-  item: WorklistItem
-  readOnly: boolean
-  onOpen: () => void
-}) {
-  const { t } = useT()
-  const isWater = item.meter.utility_type === 'water'
-  const Icon = isWater ? Droplets : Zap
-  const r = item.reading
-
-  const inner = (
-    <>
-        <span
-          className={cn(
-            'grid size-10 shrink-0 place-items-center rounded-xl ring-1 ring-inset',
-            isWater ? 'bg-water-50 text-water-700 ring-water-100' : 'bg-power-50 text-power-700 ring-power-100',
-          )}
-        >
-          <Icon className="size-5" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="font-semibold text-slate-900">{lotLabel(item.property.block, item.property.lot)}</p>
-          <p className="truncate text-sm text-slate-500">
-            {item.ownerName ?? '—'} · {isWater ? t('properties.water') : t('properties.electric')}
-          </p>
-          {r && (
-            <p className="mt-0.5 truncate text-xs text-slate-400">
-              {meterReading(r.present_reading, item.meter.digits)} · {t('readings.consumption')}:{' '}
-              {r.consumption}
-              {item.readerName ? ` · ${t('readings.encodedBy')} ${item.readerName}` : ''}
-            </p>
-          )}
-        </div>
-
-        {r ? (
-          r.status === 'for_review' ? (
-            <Badge tone="warning">
-              <AlertTriangle className="mr-1 size-3" />
-              {t('readings.flagged')}
-            </Badge>
-          ) : (
-            <Badge tone="success">
-              <CheckCircle2 className="mr-1 size-3" />
-              {t('readings.done')}
-            </Badge>
-          )
-        ) : readOnly ? (
-          <span className="text-xs text-slate-400">{t('readings.notRead')}</span>
-        ) : (
-          <Badge tone="neutral">{t('readings.encode')}</Badge>
-        )}
-        {!readOnly && <ChevronRight className="size-5 shrink-0 text-slate-300" />}
-    </>
-  )
-
-  return (
-    <li>
-      {readOnly ? (
-        <div className="flex w-full items-center gap-3 px-4 py-3.5 sm:px-5">{inner}</div>
-      ) : (
-        <button
-          type="button"
-          onClick={onOpen}
-          className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 sm:px-5"
-        >
-          {inner}
-        </button>
-      )}
-    </li>
   )
 }

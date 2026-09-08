@@ -1,14 +1,12 @@
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight, CreditCard, Droplets, Receipt, Zap } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
 import { fetchBill, fetchMyBills } from '@/features/billing/billing-api'
-import { fetchReadingPhotoPath, getSignedPhotoUrl } from '@/features/readings/readings-api'
+import { BillReadingDetail } from '@/features/billing/BillReadingDetail'
 import { Card, CardBody, CardHeader } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { Modal } from '@/components/ui/Modal'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageLoader, Spinner } from '@/components/ui/Spinner'
@@ -51,22 +49,43 @@ export function HomeownerBills() {
               <li key={b.id}>
                 <Link
                   to={`/dashboard/bills/${b.id}`}
-                  className="flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-slate-50 sm:px-5"
+                  className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5 transition-colors hover:bg-slate-50 sm:flex-nowrap sm:px-5"
                 >
                   <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-100">
                     <Receipt className="size-5" />
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-slate-900">{b.cycle?.code ?? b.bill_no}</p>
-                    <p className="text-xs text-slate-500">
+                  <div className="min-w-0 flex-1 basis-44">
+                    <p className="truncate font-semibold text-slate-900">
+                      {b.cycle?.code ?? b.bill_no}
+                    </p>
+                    {/* Konsumo ng buwang iyon — dito nakikita ang pagtaas-baba */}
+                    <p className="text-xs text-slate-600">
+                      {[
+                        b.items?.find((i) => i.item_type === 'water')?.quantity != null
+                          ? fmtCons(
+                              b.items.find((i) => i.item_type === 'water')!.quantity!,
+                              'water',
+                            )
+                          : null,
+                        b.items?.find((i) => i.item_type === 'electric')?.quantity != null
+                          ? fmtCons(
+                              b.items.find((i) => i.item_type === 'electric')!.quantity!,
+                              'electric',
+                            )
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ') || '—'}
+                    </p>
+                    <p className="text-xs text-slate-400">
                       {t('billing.dueDate')}: {shortDate(b.due_date)}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="shrink-0 text-right">
                     <p className="tabular font-semibold text-slate-900">{money(b.balance)}</p>
                     <Badge tone={TONE[b.status]}>{t(`billing.st_${b.status}`)}</Badge>
                   </div>
-                  <ChevronRight className="size-5 shrink-0 text-slate-300" />
+                  <ChevronRight className="hidden size-5 shrink-0 text-slate-300 sm:block" />
                 </Link>
               </li>
             ))}
@@ -170,14 +189,13 @@ export function HomeownerBillDetail() {
             </CardBody>
           </Card>
 
-          {/* Meter photos — patunay ng reading */}
-          <MeterPhotos
-            items={
-              bill.items?.filter(
-                (it) => it.meter_reading_id && (it.item_type === 'water' || it.item_type === 'electric'),
-              ) ?? []
-            }
-          />
+          {/* Basa at litrato ng metro — kapareho ng nakikita ng admin */}
+          <Card>
+            <CardHeader title={t('readings.photo')} />
+            <CardBody>
+              <BillReadingDetail items={bill.items ?? []} />
+            </CardBody>
+          </Card>
 
           {/* Pay CTA */}
           {bill.balance > 0 && bill.status !== 'payment_pending' && (
@@ -193,58 +211,6 @@ export function HomeownerBillDetail() {
         </div>
       )}
     </AppShell>
-  )
-}
-
-function MeterPhotos({
-  items,
-}: {
-  items: { id: string; item_type: string; meter_reading_id: string | null; description: string | null }[]
-}) {
-  const { t } = useT()
-  const [photo, setPhoto] = useState<string | null>(null)
-  const [loading, setLoading] = useState<string | null>(null)
-
-  if (items.length === 0) return null
-
-  async function view(readingId: string) {
-    setLoading(readingId)
-    try {
-      const path = await fetchReadingPhotoPath(readingId)
-      if (path) setPhoto(await getSignedPhotoUrl(path))
-    } finally {
-      setLoading(null)
-    }
-  }
-
-  return (
-    <>
-      <Card>
-        <CardHeader title={t('readings.photo')} />
-        <CardBody className="flex flex-wrap gap-2">
-          {items.map((it) => (
-            <Button
-              key={it.id}
-              variant="outline"
-              size="sm"
-              loading={loading === it.meter_reading_id}
-              onClick={() => it.meter_reading_id && view(it.meter_reading_id)}
-              iconLeft={
-                it.item_type === 'water' ? <Droplets className="size-4" /> : <Zap className="size-4" />
-              }
-            >
-              {it.description ?? it.item_type}
-            </Button>
-          ))}
-        </CardBody>
-      </Card>
-
-      <Modal open={Boolean(photo)} onClose={() => setPhoto(null)} title={t('readings.viewPhoto')} size="lg">
-        {photo && (
-          <img src={photo} alt="meter" className="max-h-[70vh] w-full rounded-input object-contain" />
-        )}
-      </Modal>
-    </>
   )
 }
 

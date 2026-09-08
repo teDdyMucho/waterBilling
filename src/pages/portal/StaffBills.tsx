@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { AlertTriangle, ArrowLeft, ChevronDown, ChevronRight, Droplets, Receipt, Search, Zap } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/AppShell'
+import { BillReadingDetail } from '@/features/billing/BillReadingDetail'
 import { fetchAllBills, fetchBillsForProperty } from '@/features/billing/billing-api'
 import { Card, CardBody } from '@/components/ui/Card'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
@@ -355,6 +356,14 @@ function BillHistoryRow({
                 <p className="text-slate-500">{t('billing.balance')}</p>
                 <p className="tabular font-semibold text-slate-900">{money(bill.balance)}</p>
               </div>
+            </div>
+
+            {/* Basa at litrato ng metro — kapareho ng nakikita ng homeowner */}
+            <div className="mt-4 border-t border-slate-200 pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {t('readings.photo')}
+              </p>
+              <BillReadingDetail items={bill.items ?? []} />
             </div>
           </div>
         )}

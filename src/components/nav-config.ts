@@ -11,7 +11,6 @@ import {
   Receipt,
   Camera,
   ScrollText,
-  ShieldCheck,
   UserCircle,
   Users,
   type LucideIcon,
@@ -79,7 +78,6 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       items: [
         { to: '/admin/properties', labelKey: 'sidebar.properties', icon: Building2 },
         { to: '/admin/cycles', labelKey: 'sidebar.cycles', icon: CalendarClock },
-        { to: '/admin/review', labelKey: 'sidebar.review', icon: ShieldCheck },
         { to: '/admin/rates', labelKey: 'sidebar.rates', icon: Gauge },
         { to: '/admin/payments', labelKey: 'sidebar.payments', icon: CreditCard },
         { to: '/admin/payment-settings', labelKey: 'sidebar.paymentSettings', icon: QrCode },

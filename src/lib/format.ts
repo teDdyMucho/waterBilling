@@ -106,6 +106,19 @@ export function daysUntil(date: string | Date): number {
 }
 
 /** Blk 5 Lot 12 */
+/**
+ * Pangalan ng property sa UI. Ang mga espesyal na property (Unknown,
+ * C.O. Subdivision) ay may sariling label imbes na Blk/Lot.
+ */
+export function propertyLabel(p?: {
+  label?: string | null
+  block?: string | null
+  lot?: string | null
+} | null): string {
+  if (!p) return '—'
+  return p.label?.trim() || lotLabel(p.block, p.lot)
+}
+
 export function lotLabel(block?: string | null, lot?: string | null): string {
   if (!block && !lot) return '—'
   return `Blk ${block ?? '—'} Lot ${lot ?? '—'}`

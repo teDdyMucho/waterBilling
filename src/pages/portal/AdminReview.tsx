@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Image as ImageIcon, ShieldCheck, X } from 'lucide-react'
-import { AppShell, PageHeader } from '@/components/AppShell'
 import {
   fetchReadingsForReview,
   getSignedPhotoUrl,
@@ -19,7 +18,11 @@ import { Spinner } from '@/components/ui/Spinner'
 import { useT } from '@/hooks/useT'
 import { consumption as fmtConsumption, lotLabel, meterReading } from '@/lib/format'
 
-export default function AdminReview() {
+/**
+ * Panel ng flagged readings. Walang sariling AppShell — nakapaloob ito sa
+ * Concerns page bilang tab, para iisa lang ang inbox na binabantayan ng admin.
+ */
+export function ReadingReviewPanel() {
   const { t } = useT()
   const qc = useQueryClient()
   const [photo, setPhoto] = useState<string | null>(null)
@@ -32,6 +35,7 @@ export default function AdminReview() {
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['readings-review'] })
     qc.invalidateQueries({ queryKey: ['worklist'] })
+    qc.invalidateQueries({ queryKey: ['open-worklist'] })
   }
 
   const mVerify = useMutation({
@@ -57,9 +61,7 @@ export default function AdminReview() {
   const busy = mVerify.isPending || mReject.isPending
 
   return (
-    <AppShell>
-      <PageHeader title={t('readings.reviewTitle')} description={t('readings.reviewSub')} />
-
+    <>
       {error && (
         <Alert tone="danger" className="mb-4">
           {error}
@@ -103,8 +105,14 @@ export default function AdminReview() {
       <Modal open={Boolean(photo)} onClose={() => setPhoto(null)} title={t('readings.viewPhoto')} size="lg">
         {photo && <img src={photo} alt="meter" className="max-h-[70vh] w-full rounded-input object-contain" />}
       </Modal>
-    </AppShell>
+    </>
   )
+}
+
+/** Bilang ng flagged — pang-badge sa tab. */
+export function useReviewCount() {
+  const { data } = useQuery({ queryKey: ['readings-review'], queryFn: fetchReadingsForReview })
+  return data?.length ?? 0
 }
 
 function ReviewRow({
