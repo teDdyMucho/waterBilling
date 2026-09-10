@@ -100,11 +100,6 @@ export type ReadingStatus = 'draft' | 'for_review' | 'verified' | 'rejected'
 export interface BillingCycle {
   id: string
   code: string
-  /** Ang property na sinasaklaw. NULL = lumang cycle na pang-lahat. */
-  property_id: string | null
-  /** Naka-embed kapag hiningi — para maipakita kung kanino ang cycle. */
-  property?: { block: string; lot: string } | null
-  ownerName?: string | null
   reading_start: string | null
   reading_end: string | null
   bill_date: string | null

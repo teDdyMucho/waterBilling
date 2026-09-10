@@ -9,7 +9,6 @@ import {
   HelpCircle,
   Plus,
   Receipt,
-  Search,
   Send,
   Trash2,
   TriangleAlert,
@@ -18,7 +17,6 @@ import {
 import { AppShell, PageHeader } from '@/components/AppShell'
 import { CycleFormModal } from '@/features/readings/CycleFormModal'
 import { UnassignedTab } from '@/features/readings/UnassignedTab'
-import { fetchProperties } from '@/features/properties/properties-api'
 import {
   BillBreakdown,
   BillReadingDetail,
@@ -37,7 +35,6 @@ import {
   releaseBills,
 } from '@/features/billing/billing-api'
 import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
@@ -46,7 +43,7 @@ import { Alert } from '@/components/ui/Alert'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
 import { useT } from '@/hooks/useT'
-import { lotLabel, money, shortDate } from '@/lib/format'
+import { money, shortDate } from '@/lib/format'
 import { cn } from '@/lib/cn'
 import type { BillingCycle, BillStatus, CycleStatus, UnassignedKind } from '@/types/domain'
 
@@ -104,26 +101,10 @@ export default function AdminCycles() {
     { unknown: 0, co_subdivision: 0 } as Record<UnassignedKind, number>,
   )
   const [tab, setTab] = useState<Tab>('all')
-  // Isang cycle = isang property, kaya pumipili muna ng homeowner bago
-  // makita ang cycles niya.
-  const [propertyId, setPropertyId] = useState<string | null>(null)
-  const [propSearch, setPropSearch] = useState('')
-  const { data: properties } = useQuery({ queryKey: ['properties'], queryFn: fetchProperties })
+  // Isang cycle para sa BUONG subdivision (0030) — walang pagpili ng
+  // homeowner; isang listahan lang ng cycles.
   const kindTab = KIND_TABS.find((k) => k === tab) ?? null
-  const byProperty = propertyId ? cycles.filter((c) => c.property_id === propertyId) : cycles
-  const filtered =
-    tab === 'all' || kindTab ? byProperty : byProperty.filter((c) => c.status === tab)
-
-  const selectedProperty = (properties ?? []).find((p) => p.id === propertyId) ?? null
-  const ownerOf = (p: { owners?: { end_date: string | null; profile: { full_name: string } | null }[] }) =>
-    p.owners?.find((o) => !o.end_date)?.profile?.full_name ?? null
-
-  const propQ = propSearch.trim().toLowerCase()
-  const propRows = (properties ?? []).filter((p) =>
-    !propQ
-      ? true
-      : `${lotLabel(p.block, p.lot)} ${ownerOf(p) ?? ''}`.toLowerCase().includes(propQ),
-  )
+  const filtered = tab === 'all' || kindTab ? cycles : cycles.filter((c) => c.status === tab)
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['cycles'] })
@@ -192,27 +173,8 @@ export default function AdminCycles() {
         </Alert>
       )}
 
-      {propertyId && !kindTab && selectedProperty && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <button
-              type="button"
-              onClick={() => setPropertyId(null)}
-              className="mb-1 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900"
-            >
-              <ArrowLeft className="size-4" />
-              {t('readings.backToProperties')}
-            </button>
-            <p className="text-lg font-semibold text-slate-900">
-              {lotLabel(selectedProperty.block, selectedProperty.lot)}
-            </p>
-            <p className="text-sm text-slate-500">{ownerOf(selectedProperty) ?? '—'}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Status tabs — para sa cycles ng napiling homeowner */}
-      {!isLoading && propertyId && !kindTab && (
+      {/* Status tabs */}
+      {!isLoading && !kindTab && (
         <div className="mb-4 flex flex-wrap gap-1.5">
           {STATUS_TABS.map((s) => (
             <button
@@ -243,7 +205,7 @@ export default function AdminCycles() {
               className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-medium text-slate-600 ring-1 ring-inset ring-slate-200 transition-colors hover:bg-slate-50"
             >
               <ArrowLeft className="size-3.5" />
-              {t('readings.backToProperties')}
+              {t('readings.cyclesTitle')}
             </button>
           )}
           {KIND_TABS.map((k) => {
@@ -270,71 +232,6 @@ export default function AdminCycles() {
 
       {kindTab ? (
         <UnassignedTab kind={kindTab} />
-      ) : !propertyId ? (
-        /* Hakbang 1 — pumili ng homeowner */
-        <>
-          <div className="mb-3 sm:max-w-sm">
-            <Input
-              placeholder={t('readings.searchProperty')}
-              iconLeft={<Search className="size-4" />}
-              value={propSearch}
-              onChange={(e) => setPropSearch(e.target.value)}
-            />
-          </div>
-          <Card>
-            {propRows.length === 0 ? (
-              <p className="p-8 text-center text-sm text-slate-500">{t('readings.noMatches')}</p>
-            ) : (
-              <ul className="divide-y divide-slate-100">
-                {propRows.map((p) => {
-                  const mine = cycles.filter((c) => c.property_id === p.id)
-                  // Ang pinakabago: ang bukas na cycle kung meron, kung wala
-                  // ang huling ginawa (naka-sort na by code, pababa).
-                  const latest =
-                    mine.find((c) => c.status === 'open' || c.status === 'reading') ?? mine[0] ?? null
-                  const ls = latest ? statsMap?.[latest.id] : undefined
-                  const encoded = (ls?.verified ?? 0) + (ls?.forReview ?? 0) > 0
-                  return (
-                    <li key={p.id}>
-                      <button
-                        type="button"
-                        onClick={() => setPropertyId(p.id)}
-                        className="flex w-full flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 sm:flex-nowrap sm:px-5"
-                      >
-                        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-100">
-                          <CalendarClock className="size-5" />
-                        </span>
-                        <div className="min-w-0 flex-1 basis-40">
-                          <p className="truncate font-semibold text-slate-900">
-                            {lotLabel(p.block, p.lot)}
-                          </p>
-                          <p className="truncate text-sm text-slate-500">{ownerOf(p) ?? '—'}</p>
-                        </div>
-                        {/* Sa mobile, sariling linya ang badges — kung hindi,
-                            napipiga ang pangalan hanggang sa mag-isang letra. */}
-                        <div className="flex w-full shrink-0 flex-wrap items-center gap-1.5 sm:w-auto sm:justify-end">
-                          {latest?.due_date ? (
-                            <Badge tone="info">
-                              {`${t('billing.nextBilling')}: ${shortDate(latest.due_date)}`}
-                            </Badge>
-                          ) : (
-                            <Badge tone="neutral">{t('billing.noNextBilling')}</Badge>
-                          )}
-                          {latest && (
-                            <Badge tone={encoded ? 'success' : 'warning'}>
-                              {encoded ? t('readings.encodedTag') : t('readings.notEncodedTag')}
-                            </Badge>
-                          )}
-                        </div>
-                        <ChevronRight className="hidden size-5 shrink-0 text-slate-300 sm:block" />
-                      </button>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
-          </Card>
-        </>
       ) : (
       <Card>
         {isLoading ? (
@@ -391,12 +288,6 @@ export default function AdminCycles() {
                       <p className="font-semibold text-slate-900">{c.code}</p>
                       <Badge tone={TONE[c.status]}>{t(`readings.status${cap(c.status)}`)}</Badge>
                     </div>
-                    {/* Kanino ang cycle na ito */}
-                    <p className="text-xs font-medium text-slate-600">
-                      {c.property
-                        ? `${lotLabel(c.property.block, c.property.lot)}${c.ownerName ? ` — ${c.ownerName}` : ''}`
-                        : t('readings.allProperties')}
-                    </p>
                     <p className="text-xs text-slate-500">
                       {c.due_date ? `${t('billing.dueDate')}: ${shortDate(c.due_date)}` : '—'}
                     </p>
@@ -524,7 +415,7 @@ export default function AdminCycles() {
       </Card>
       )}
 
-      <CycleFormModal open={open} onClose={() => setOpen(false)} propertyId={propertyId} />
+      <CycleFormModal open={open} onClose={() => setOpen(false)} />
       {viewBills && (
         <BillsModal cycle={viewBills} onClose={() => setViewBills(null)} billTone={BILL_TONE} />
       )}

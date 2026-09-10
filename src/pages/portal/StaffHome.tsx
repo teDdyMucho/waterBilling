@@ -7,6 +7,7 @@ import { WelcomeBanner } from '@/components/WelcomeBanner'
 import { EncodeReadingModal } from '@/features/readings/EncodeReadingModal'
 import { PropertyPicker, unassignedKindOf } from '@/features/readings/PropertyPicker'
 import { fetchOpenWorklist } from '@/features/readings/readings-api'
+import { fetchProperties } from '@/features/properties/properties-api'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/hooks/useAuth'
@@ -24,6 +25,9 @@ export default function StaffHome() {
   // Isa ang cycle kada property — lahat ng bukas ay nasa isang listahan,
   // at dala ng bawat item kung saang cycle ito mase-save.
   const { data: items } = useQuery({ queryKey: ['open-worklist'], queryFn: fetchOpenWorklist })
+  // Lahat ng property — para makita rin ang wala pang bukas na cycle,
+  // at para mahanap sila sa search.
+  const { data: properties } = useQuery({ queryKey: ['properties'], queryFn: fetchProperties })
 
   const list = items ?? []
   const hasOpen = list.length > 0
@@ -137,7 +141,12 @@ export default function StaffHome() {
           // walang property, kaya walang cycle; ang admin ang magtatakda.
           cycle={selectedItems[0]?.cycle ?? null}
           picker={
-            <PropertyPicker items={forUtility} value={propertyId} onChange={setPropertyId} />
+            <PropertyPicker
+              items={forUtility}
+              properties={properties ?? []}
+              value={propertyId}
+              onChange={setPropertyId}
+            />
           }
           special={specialKind ? { kind: specialKind, utility } : undefined}
           heading={t(utility === 'water' ? 'properties.water' : 'properties.electric')}

@@ -13,46 +13,28 @@ import type {
 
 // ---- Billing cycles -------------------------------------------------
 
-/** Kasama ang property at pangalan ng may-ari — kanino ba ang cycle. */
-const CYCLE_SELECT =
-  '*, property:properties(block, lot, owners:property_owners(end_date, profile:profiles(full_name)))'
-
-type CycleRow = BillingCycle & {
-  property:
-    | {
-        block: string
-        lot: string
-        owners: { end_date: string | null; profile: { full_name: string } | null }[]
-      }
-    | null
-}
-
-function withOwner(rows: CycleRow[]): BillingCycle[] {
-  return rows.map((c) => ({
-    ...c,
-    property: c.property ? { block: c.property.block, lot: c.property.lot } : null,
-    ownerName: c.property?.owners?.find((o) => !o.end_date)?.profile?.full_name ?? null,
-  }))
-}
-
 export async function fetchCycles(): Promise<BillingCycle[]> {
   const { data, error } = await supabase
     .from('billing_cycles')
-    .select(CYCLE_SELECT)
+    .select('*')
     .order('code', { ascending: false })
   if (error) throw error
-  return withOwner((data ?? []) as unknown as CycleRow[])
+  return (data ?? []) as BillingCycle[]
 }
 
-/** LAHAT ng bukas na cycle — isa kada property, kaya marami ang posible. */
+/**
+ * Ang bukas na cycle. Isa lang ito para sa BUONG subdivision (0030), pero
+ * listahan pa rin ang isinasauli para hindi masira kung may dalawang
+ * naiwang bukas mula sa lumang disenyo.
+ */
 export async function fetchOpenCycles(): Promise<BillingCycle[]> {
   const { data, error } = await supabase
     .from('billing_cycles')
-    .select(CYCLE_SELECT)
+    .select('*')
     .in('status', ['open', 'reading'])
     .order('code', { ascending: false })
   if (error) throw error
-  return withOwner((data ?? []) as unknown as CycleRow[])
+  return (data ?? []) as BillingCycle[]
 }
 
 /** Ang kasalukuyang cycle na binabasa (open/reading), pinakabago. */
@@ -70,8 +52,6 @@ export async function fetchActiveCycle(): Promise<BillingCycle | null> {
 
 export interface CycleInput {
   code: string
-  /** Kaninong property ang cycle na ito. */
-  property_id: string | null
   reading_start?: string | null
   reading_end?: string | null
   bill_date?: string | null
@@ -176,28 +156,14 @@ export async function createReading(input: CreateReadingInput): Promise<void> {
   if (error) throw error
 }
 
-/**
- * Worklist ng isang cycle. Kapag ang cycle ay para sa isang property
- * (migration 0026), ang metro ng property na iyon LANG ang kasama.
- */
+/** Worklist ng isang cycle — lahat ng aktibong metro ng subdivision. */
 export async function fetchWorklist(cycleId: string): Promise<WorklistItem[]> {
-  const { data: cycle, error: cErr } = await supabase
-    .from('billing_cycles')
-    .select('property_id')
-    .eq('id', cycleId)
-    .maybeSingle()
-  if (cErr) throw cErr
-  const propertyId = (cycle as { property_id: string | null } | null)?.property_id ?? null
-
-  let mq = supabase
+  const { data: meters, error: mErr } = await supabase
     .from('meters')
     .select(
       '*, property:properties(id, block, lot, phase, owners:property_owners(end_date, profile:profiles(full_name)))',
     )
     .eq('status', 'active')
-  if (propertyId) mq = mq.eq('property_id', propertyId)
-
-  const { data: meters, error: mErr } = await mq
   if (mErr) throw mErr
 
   const { data: readings, error: rErr } = await supabase
@@ -526,8 +492,6 @@ export async function fetchOpenWorklist(): Promise<WorklistItem[]> {
   const items: WorklistItem[] = []
   for (const c of cycles) {
     for (const m of rows) {
-      // Kapag may property ang cycle, ang metro nito lang ang kasama.
-      if (c.property_id && m.property?.id !== c.property_id) continue
       const activeOwner = m.property?.owners?.find((o) => !o.end_date)
       const { property: _p, ...meter } = m
       const reading = byKey.get(`${m.id}:${c.id}`) ?? null
@@ -558,10 +522,11 @@ export interface PropertyCycleGroup {
  * tinitingnan.
  */
 export async function fetchPropertyReadings(propertyId: string): Promise<PropertyCycleGroup[]> {
+  // Isa ang cycle para sa buong subdivision (0030), kaya lahat ng cycle ang
+  // kinukuha — ang metro ng property ang nagsasala kung ano ang ipapakita.
   const { data: cyclesRaw, error: cErr } = await supabase
     .from('billing_cycles')
     .select('id, code, status')
-    .eq('property_id', propertyId)
     .order('code', { ascending: false })
   if (cErr) throw cErr
   const cycles = (cyclesRaw ?? []) as { id: string; code: string; status: BillingCycle['status'] }[]

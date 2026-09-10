@@ -4,9 +4,9 @@ import { NewPropertyAccountModal } from '@/features/properties/NewPropertyAccoun
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { useT } from '@/hooks/useT'
-import { propertyLabel } from '@/lib/format'
+import { lotLabel, propertyLabel } from '@/lib/format'
 import { cn } from '@/lib/cn'
-import type { UnassignedKind, WorklistItem } from '@/types/domain'
+import type { PropertyWithRelations, UnassignedKind, WorklistItem } from '@/types/domain'
 
 /**
  * Dalawang pagpipiliang WALANG property. Sa halip na tunay na metro,
@@ -30,6 +30,8 @@ type Row = {
   ownerName: string | null
   /** Unknown / C.O. Subdivision — nasa itaas at walang tunay na metro. */
   special: boolean
+  /** Walang bukas na cycle — hindi pa puwedeng basahan. */
+  noCycle: boolean
   items: WorklistItem[]
 }
 
@@ -40,11 +42,14 @@ type Row = {
  */
 export function PropertyPicker({
   items,
+  properties = [],
   value,
   onChange,
 }: {
-  /** Buong worklist ng cycle (lahat ng metro ng lahat ng property). */
+  /** Mga metrong PUWEDENG basahan ngayon (may bukas na cycle). */
   items: WorklistItem[]
+  /** LAHAT ng property — kasama ang walang bukas na cycle, para makita. */
+  properties?: PropertyWithRelations[]
   value: string | null
   onChange: (propertyId: string | null) => void
 }) {
@@ -56,19 +61,38 @@ export function PropertyPicker({
 
   const rows = useMemo(() => {
     const map = new Map<string, Row>()
+
+    // Una: LAHAT ng property — para makita rin ang wala pang cycle.
+    for (const p of properties) {
+      map.set(p.id, {
+        id: p.id,
+        label: lotLabel(p.block, p.lot),
+        ownerName: p.owners?.find((o) => !o.end_date)?.profile?.full_name ?? null,
+        special: false,
+        noCycle: true,
+        items: [],
+      })
+    }
+
+    // Pangalawa: ang may bukas na cycle — sila ang puwedeng basahan.
     for (const i of items) {
       const r = map.get(i.property.id)
-      if (r) r.items.push(i)
-      else
+      if (r) {
+        r.noCycle = false
+        r.items.push(i)
+      } else {
         map.set(i.property.id, {
           id: i.property.id,
           label: propertyLabel(i.property),
           ownerName: i.ownerName,
           special: false,
+          noCycle: false,
           items: [i],
         })
+      }
     }
-    const properties = [...map.values()].sort((a, b) =>
+
+    const propRows = [...map.values()].sort((a, b) =>
       a.label.localeCompare(b.label, undefined, { numeric: true }),
     )
 
@@ -79,6 +103,7 @@ export function PropertyPicker({
         label: t('readings.unknownProperty'),
         ownerName: t('readings.unknownPropertyHint'),
         special: true,
+        noCycle: false,
         items: [],
       },
       {
@@ -86,18 +111,21 @@ export function PropertyPicker({
         label: t('readings.coSubdivision'),
         ownerName: t('readings.coSubdivisionHint'),
         special: true,
+        noCycle: false,
         items: [],
       },
     ]
 
-    return [...special, ...properties]
-  }, [items, t])
+    return [...special, ...propRows]
+  }, [items, properties, t])
 
   const selected = rows.find((r) => r.id === value) ?? null
 
   const matches = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return rows
+    // Walang hinahanap — Unknown at C.O. lang ang ipinapakita. Ang mga
+    // property ay maraming-marami; hanapin, huwag i-scroll.
+    if (!q) return rows.filter((r) => r.special)
     return rows.filter(
       (r) => r.label.toLowerCase().includes(q) || (r.ownerName ?? '').toLowerCase().includes(q),
     )
@@ -153,16 +181,28 @@ export function PropertyPicker({
             {t('readings.noMatches')}
           </li>
         )}
+        {!search.trim() && (
+          <li className="px-3.5 py-3 text-center text-xs text-slate-400">
+            {t('readings.searchToFind')}
+          </li>
+        )}
         {matches.map((r) => (
           <li key={r.id}>
             <button
               type="button"
               onClick={() => onChange(r.id)}
-              className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-slate-50"
+              disabled={r.noCycle}
+              title={r.noCycle ? t('readings.noCycleForProperty') : undefined}
+              className={cn(
+                'flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors',
+                r.noCycle ? 'cursor-not-allowed opacity-60' : 'hover:bg-slate-50',
+              )}
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-slate-900">{r.label}</p>
-                <p className="truncate text-xs text-slate-500">{r.ownerName ?? '—'}</p>
+                <p className="truncate text-xs text-slate-500">
+                  {r.noCycle ? t('readings.noCycleForProperty') : (r.ownerName ?? '—')}
+                </p>
               </div>
               <div className="flex shrink-0 gap-1">
                 {r.special && (
