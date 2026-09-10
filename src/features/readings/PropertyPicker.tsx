@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Droplets, HelpCircle, Search, Zap } from 'lucide-react'
+import { Droplets, HelpCircle, Plus, Search, Zap } from 'lucide-react'
+import { NewPropertyAccountModal } from '@/features/properties/NewPropertyAccountModal'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { useT } from '@/hooks/useT'
@@ -49,6 +50,9 @@ export function PropertyPicker({
 }) {
   const { t } = useT()
   const [search, setSearch] = useState('')
+  // Wala sa listahan ang hinahanap — dito gumagawa ng bagong lote,
+  // kasama na ang account ng homeowner nito.
+  const [addOpen, setAddOpen] = useState(false)
 
   const rows = useMemo(() => {
     const map = new Map<string, Row>()
@@ -130,6 +134,18 @@ export function PropertyPicker({
         onChange={(e) => setSearch(e.target.value)}
         autoFocus
       />
+
+      <Button
+        type="button"
+        variant="outline"
+        block
+        onClick={() => setAddOpen(true)}
+        iconLeft={<Plus className="size-4" />}
+      >
+        {t('properties.add')}
+      </Button>
+
+      <NewPropertyAccountModal open={addOpen} onClose={() => setAddOpen(false)} />
 
       <ul className="max-h-56 divide-y divide-slate-100 overflow-y-auto rounded-input border border-slate-200">
         {matches.length === 0 && (

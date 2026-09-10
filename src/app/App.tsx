@@ -10,6 +10,7 @@ import {
   PublicOnly,
   RequireAuth,
   RoleGuard,
+  RequireSetup,
   StatusRoute,
 } from '@/features/auth/guards'
 
@@ -18,6 +19,7 @@ import LoginPage from '@/pages/auth/LoginPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import BlockedPage from '@/pages/auth/BlockedPage'
+import SetupPage from '@/pages/auth/SetupPage'
 import HomeownerHome from '@/pages/portal/HomeownerHome'
 import { HomeownerBills, HomeownerBillDetail } from '@/pages/portal/HomeownerBills'
 // Lazy — recharts ay mabigat; huwag isama sa initial bundle.
@@ -73,6 +75,11 @@ export default function App() {
               {/* Reset — kailangan ng recovery session mula sa email link */}
               <Route path="/reset-password" element={<ResetPasswordPage />} />
 
+              {/* Unang setup ng bagong homeowner */}
+              <Route element={<RequireSetup />}>
+                <Route path="/setup" element={<SetupPage />} />
+              </Route>
+
               {/* Status screens */}
               <Route element={<StatusRoute />}>
                 <Route path="/blocked" element={<BlockedPage />} />
@@ -101,6 +108,7 @@ export default function App() {
                 </Route>
                 <Route element={<RoleGuard allow={['staff']} />}>
                   <Route path="/staff" element={<StaffHome />} />
+                  <Route path="/staff/accounts" element={<AdminAccounts />} />
                   <Route path="/staff/properties" element={<StaffProperties />} />
                   <Route path="/staff/properties/:id" element={<StaffPropertyDetail />} />
                   <Route path="/staff/meter-guide" element={<MeterGuide />} />

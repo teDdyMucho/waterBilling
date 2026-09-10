@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Check,
   KeyRound,
+  Link as LinkIcon,
   MapPin,
   MoreVertical,
   Search,
@@ -25,6 +26,8 @@ import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
+import { CredentialsBlock } from '@/features/properties/NewPropertyAccountModal'
+import { Modal } from '@/components/ui/Modal'
 import { useAuth } from '@/hooks/useAuth'
 import { useT } from '@/hooks/useT'
 import { lotLabel } from '@/lib/format'
@@ -45,14 +48,31 @@ const STATUS_TONE: Record<AccountStatus, BadgeTone> = {
 
 type RoleFilter = 'all' | Role
 
+/** Bagong homeowner na hindi pa nakakapaglagay ng pangalan at address. */
+function needsSetup(p: Profile) {
+  return p.role === 'homeowner' && !p.setup_completed_at
+}
+
+/**
+ * Ang password ay hindi nababasa mula sa database (naka-hash). Ito ang
+ * default na ibinibigay ng create_property_with_account — tama ito hangga't
+ * hindi pa nagpapalit ang homeowner, at doon lang naman ito ipinapakita.
+ */
+const DEFAULT_PASSWORD = '123456'
+
 export function AccountManagement() {
   const { t } = useT()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<RoleFilter>('all')
   const [addOpen, setAddOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Ang link ng bagong homeowner — ipinapadala ng staff/admin.
+  const [share, setShare] = useState<Profile | null>(null)
+  // Ang staff ay nakakakita lang ng homeowner (RLS) at walang kapangyarihang
+  // magbago ng account — ang link lang ang magagawa nila.
+  const isAdmin = profile?.role === 'admin'
 
   const { data, isLoading } = useQuery({
     queryKey: ['all-profiles'],
@@ -120,9 +140,11 @@ export function AccountManagement() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Button onClick={() => setAddOpen(true)} iconLeft={<UserPlus className="size-4" />}>
-          {t('accounts.addAccount')}
-        </Button>
+        {isAdmin && (
+          <Button onClick={() => setAddOpen(true)} iconLeft={<UserPlus className="size-4" />}>
+            {t('accounts.addAccount')}
+          </Button>
+        )}
       </div>
 
       {/* Role filter tabs */}
@@ -193,9 +215,14 @@ export function AccountManagement() {
                         </Badge>
                       </td>
                       <td className="px-5 py-3">
-                        <Badge tone={STATUS_TONE[p.status]}>
-                          {t(`accounts.status${cap(p.status)}`)}
-                        </Badge>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge tone={STATUS_TONE[p.status]}>
+                            {t(`accounts.status${cap(p.status)}`)}
+                          </Badge>
+                          {needsSetup(p) && (
+                            <Badge tone="warning">{t('accounts.notSetUp')}</Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="px-5 py-3 text-slate-600">
                         {p.role === 'homeowner'
@@ -205,6 +232,18 @@ export function AccountManagement() {
                             : '—'}
                       </td>
                       <td className="px-5 py-3 text-right">
+                        {needsSetup(p) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="mr-2"
+                            onClick={() => setShare(p)}
+                            iconLeft={<LinkIcon className="size-3.5" />}
+                          >
+                            {t('accounts.shareAccess')}
+                          </Button>
+                        )}
+                        {isAdmin && (
                         <RowActions
                           profile={p}
                           isSelf={p.id === user?.id}
@@ -214,6 +253,7 @@ export function AccountManagement() {
                           onSetZone={(z) => mZone.mutate({ id: p.id, zone: z })}
                           onSendReset={() => p.email && mReset.mutate(p.email)}
                         />
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -242,22 +282,37 @@ export function AccountManagement() {
                       <Badge tone={STATUS_TONE[p.status]}>
                         {t(`accounts.status${cap(p.status)}`)}
                       </Badge>
+                      {needsSetup(p) && <Badge tone="warning">{t('accounts.notSetUp')}</Badge>}
                       {p.role === 'homeowner' && (
                         <span className="text-xs text-slate-400">
                           {lotLabel(p.block, p.lot)}
                         </span>
                       )}
                     </div>
+
+                    {needsSetup(p) && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="mt-2"
+                        onClick={() => setShare(p)}
+                        iconLeft={<LinkIcon className="size-3.5" />}
+                      >
+                        {t('accounts.shareAccess')}
+                      </Button>
+                    )}
                   </div>
-                  <RowActions
-                    profile={p}
-                    isSelf={p.id === user?.id}
-                    busy={busy}
-                    onStatus={(s) => mStatus.mutate({ id: p.id, status: s })}
-                    onRole={(r) => mRole.mutate({ id: p.id, role: r })}
-                    onSetZone={(z) => mZone.mutate({ id: p.id, zone: z })}
-                    onSendReset={() => p.email && mReset.mutate(p.email)}
-                  />
+                  {isAdmin && (
+                    <RowActions
+                      profile={p}
+                      isSelf={p.id === user?.id}
+                      busy={busy}
+                      onStatus={(s) => mStatus.mutate({ id: p.id, status: s })}
+                      onRole={(r) => mRole.mutate({ id: p.id, role: r })}
+                      onSetZone={(z) => mZone.mutate({ id: p.id, zone: z })}
+                      onSendReset={() => p.email && mReset.mutate(p.email)}
+                    />
+                  )}
                 </li>
               ))}
             </ul>
@@ -265,7 +320,24 @@ export function AccountManagement() {
         )}
       </Card>
 
-      <AddAccountModal open={addOpen} onClose={() => setAddOpen(false)} />
+      {isAdmin && <AddAccountModal open={addOpen} onClose={() => setAddOpen(false)} />}
+
+      {/* Link + credentials na ipapadala sa bagong homeowner */}
+      {share && (
+        <Modal
+          open
+          onClose={() => setShare(null)}
+          title={t('accounts.shareTitle')}
+          description={`${lotLabel(share.block, share.lot)} · ${t('accounts.shareSub')}`}
+          footer={
+            <Button variant="outline" onClick={() => setShare(null)}>
+              {t('common.close')}
+            </Button>
+          }
+        >
+          <CredentialsBlock email={share.email ?? ''} password={DEFAULT_PASSWORD} />
+        </Modal>
+      )}
     </>
   )
 }

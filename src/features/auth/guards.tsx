@@ -36,6 +36,30 @@ export function RequireAuth() {
   if (profile.status !== 'active') {
     return <Navigate to={destinationFor(profile.status, profile.role)} replace />
   }
+  // Bagong homeowner na gawa ng staff — kailangan munang punan ang
+  // pangalan at address bago makapasok sa dashboard.
+  if (profile.role === 'homeowner' && !profile.setup_completed_at) {
+    return <Navigate to="/setup" replace />
+  }
+  return <Outlet />
+}
+
+/**
+ * Para sa /setup — kailangan ng aktibong homeowner na hindi pa tapos.
+ * Kapag tapos na, itinatapon sa dashboard para hindi na ito mabalikan.
+ */
+export function RequireSetup() {
+  const { loading, session, profile, profileReady } = useAuth()
+  if (loading) return <PageLoader />
+  if (!session) return <Navigate to="/login" replace />
+  if (!profileReady) return <PageLoader />
+  if (!profile) return <ProfileMissingPage />
+  if (profile.status !== 'active') {
+    return <Navigate to={destinationFor(profile.status, profile.role)} replace />
+  }
+  if (profile.role !== 'homeowner' || profile.setup_completed_at) {
+    return <Navigate to={ROLE_HOME[profile.role]} replace />
+  }
   return <Outlet />
 }
 

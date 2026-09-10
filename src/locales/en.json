@@ -100,7 +100,15 @@
     "delete": "Delete",
     "required": "This field is required",
     "somethingWrong": "Something went wrong. Please try again.",
-    "close": "Close"
+    "close": "Close",
+    "copy": "Copy"
+  },
+  "setup": {
+    "title": "Set up your account",
+    "sub": "Tell us your name and address so your bills are addressed correctly. You only do this once.",
+    "address": "Address",
+    "addressPh": "House number and street",
+    "save": "Save and continue"
   },
   "pwa": {
     "installTitle": "Install SCS Billing",
@@ -693,6 +701,10 @@
   "accounts": {
     "title": "Account Management",
     "subtitle": "Manage homeowners, staff, and admins. Only admins can create staff and admin accounts.",
+    "notSetUp": "Not set up yet",
+    "shareAccess": "Share access",
+    "shareTitle": "Send the login to the homeowner",
+    "shareSub": "They will set their name and address after logging in.",
     "addAccount": "Add account",
     "addTitle": "Add staff or admin account",
     "addDesc": "This account will be active immediately — no approval needed.",
@@ -756,7 +768,17 @@
     "colOwner": "Owner",
     "colMeters": "Meters",
     "colStatus": "Status",
-    "noProperties": "No properties yet. Add the first one.",
+    "waterMeterNo": "Water meter number",
+    "electricMeterNo": "Electric meter number",
+    "addAccountNote": "Saving also creates the homeowner account for this lot. The homeowner fills in their name and address on first login.",
+    "accountReady": "Property and account created",
+    "accountReadySub": "Send these to the homeowner. They will set their name and address after logging in.",
+    "appLink": "App link",
+    "copyAll": "Copy link, email and password",
+    "copied": "Copied",
+    "shareIntro": "Here is your Santa Cicilia billing portal access:",
+    "shareNote": "The password is the same for every new account. Ask the homeowner to change it after logging in.",
+    "noProperties": "No properties yet.",
     "noOwner": "No owner linked",
     "water": "Water",
     "electric": "Electric",

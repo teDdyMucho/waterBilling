@@ -100,7 +100,15 @@
     "delete": "Burahin",
     "required": "Kailangan itong sagutan",
     "somethingWrong": "May nangyaring mali. Pakisubukan ulit.",
-    "close": "Isara"
+    "close": "Isara",
+    "copy": "Kopyahin"
+  },
+  "setup": {
+    "title": "I-set up ang account mo",
+    "sub": "Ilagay ang pangalan at address para tama ang pagkakasulat sa bill mo. Minsan mo lang ito gagawin.",
+    "address": "Address",
+    "addressPh": "Bilang ng bahay at kalye",
+    "save": "I-save at magpatuloy"
   },
   "pwa": {
     "installTitle": "I-install ang SCS Billing",
@@ -693,6 +701,10 @@
   "accounts": {
     "title": "Account Management",
     "subtitle": "Pamahalaan ang homeowner, staff, at admin. Admin lang ang makakagawa ng staff at admin account.",
+    "notSetUp": "Hindi pa naka-setup",
+    "shareAccess": "Ibahagi ang access",
+    "shareTitle": "Ipadala ang login sa homeowner",
+    "shareSub": "Siya ang maglalagay ng pangalan at address pagkatapos mag-login.",
     "addAccount": "Magdagdag ng account",
     "addTitle": "Magdagdag ng staff o admin account",
     "addDesc": "Aktibo agad ang account na ito — walang kailangang approval.",
@@ -756,7 +768,17 @@
     "colOwner": "May-ari",
     "colMeters": "Metro",
     "colStatus": "Status",
-    "noProperties": "Wala pang lote. Magdagdag ng una.",
+    "waterMeterNo": "Meter number ng tubig",
+    "electricMeterNo": "Meter number ng kuryente",
+    "addAccountNote": "Sa pag-save, gagawa rin ito ng account ng homeowner para sa loteng ito. Siya na ang maglalagay ng pangalan at address sa unang login.",
+    "accountReady": "Nagawa na ang property at account",
+    "accountReadySub": "Ipadala ito sa homeowner. Siya ang maglalagay ng pangalan at address pagkatapos mag-login.",
+    "appLink": "Link ng app",
+    "copyAll": "Kopyahin ang link, email at password",
+    "copied": "Nakopya",
+    "shareIntro": "Ito ang access ninyo sa billing portal ng Santa Cicilia:",
+    "shareNote": "Pareho ang password ng lahat ng bagong account. Ipapalit ito ng homeowner pagkatapos mag-login.",
+    "noProperties": "Wala pang lote.",
     "noOwner": "Walang naka-link na may-ari",
     "water": "Tubig",
     "electric": "Kuryente",

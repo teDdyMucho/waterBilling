@@ -163,3 +163,45 @@ export async function unlinkOwner(linkId: string): Promise<void> {
     .eq('id', linkId)
   if (error) throw error
 }
+
+// ---- Property + account nang sabay (migration 0029) -----------------
+
+export interface NewPropertyAccount {
+  property_id: string
+  profile_id: string
+  email: string
+  password: string
+}
+
+/**
+ * Gumawa ng property, metro, AT homeowner account nang sabay.
+ * Ang email ay galing sa lote; ang password ay pareho sa lahat.
+ * WALANG pangalan dito — ang homeowner mismo ang maglalagay niyon sa
+ * unang login niya.
+ */
+export async function createPropertyWithAccount(input: {
+  block: string
+  lot: string
+  waterMeter?: string
+  electricMeter?: string
+  installedAt?: string | null
+}): Promise<NewPropertyAccount> {
+  const { data, error } = await supabase.rpc('create_property_with_account', {
+    p_block: input.block,
+    p_lot: input.lot,
+    p_water_meter: input.waterMeter?.trim() || null,
+    p_electric_meter: input.electricMeter?.trim() || null,
+    p_installed_at: input.installedAt || null,
+  })
+  if (error) throw new Error(error.message)
+  return data as NewPropertyAccount
+}
+
+/** Unang login ng homeowner — pangalan at address. */
+export async function completeHomeownerSetup(fullName: string, address: string): Promise<void> {
+  const { error } = await supabase.rpc('complete_homeowner_setup', {
+    p_full_name: fullName,
+    p_address: address,
+  })
+  if (error) throw new Error(error.message)
+}

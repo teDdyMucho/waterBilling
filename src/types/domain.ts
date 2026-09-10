@@ -17,6 +17,8 @@ export interface Profile {
   avatar_url: string | null
   preferred_language: Language
   rejection_reason: string | null
+  /** NULL = hindi pa napupunan ng homeowner ang pangalan at address. */
+  setup_completed_at: string | null
   approved_by: string | null
   approved_at: string | null
   created_at: string

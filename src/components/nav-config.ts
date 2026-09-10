@@ -55,6 +55,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       labelKey: null,
       items: [
         { to: '/staff', labelKey: 'sidebar.workspace', icon: LayoutDashboard, end: true },
+        { to: '/staff/accounts', labelKey: 'sidebar.accounts', icon: Users },
         { to: '/staff/properties', labelKey: 'sidebar.properties', icon: Building2 },
         { to: '/staff/meter-guide', labelKey: 'sidebar.meterGuide', icon: Gauge },
         { to: '/staff/readings', labelKey: 'sidebar.readings', icon: Camera },
