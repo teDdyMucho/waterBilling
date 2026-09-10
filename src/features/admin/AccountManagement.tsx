@@ -11,9 +11,7 @@ import {
   Users,
 } from 'lucide-react'
 import {
-  approveProfile,
   fetchAllProfiles,
-  rejectProfile,
   sendResetLink,
   setProfileRole,
   setProfileStatus,
@@ -78,16 +76,6 @@ export function AccountManagement() {
     onSuccess: invalidate,
     onError: onErr,
   })
-  const mApprove = useMutation({
-    mutationFn: approveProfile,
-    onSuccess: invalidate,
-    onError: onErr,
-  })
-  const mReject = useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: string }) => rejectProfile(id, reason),
-    onSuccess: invalidate,
-    onError: onErr,
-  })
   const mZone = useMutation({
     mutationFn: ({ id, zone }: { id: string; zone: string | null }) => setProfileZone(id, zone),
     onSuccess: invalidate,
@@ -102,8 +90,6 @@ export function AccountManagement() {
   const busy =
     mStatus.isPending ||
     mRole.isPending ||
-    mApprove.isPending ||
-    mReject.isPending ||
     mZone.isPending ||
     mReset.isPending
 
@@ -223,8 +209,6 @@ export function AccountManagement() {
                           profile={p}
                           isSelf={p.id === user?.id}
                           busy={busy}
-                          onApprove={() => mApprove.mutate(p.id)}
-                          onReject={(r) => mReject.mutate({ id: p.id, reason: r })}
                           onStatus={(s) => mStatus.mutate({ id: p.id, status: s })}
                           onRole={(r) => mRole.mutate({ id: p.id, role: r })}
                           onSetZone={(z) => mZone.mutate({ id: p.id, zone: z })}
@@ -269,8 +253,6 @@ export function AccountManagement() {
                     profile={p}
                     isSelf={p.id === user?.id}
                     busy={busy}
-                    onApprove={() => mApprove.mutate(p.id)}
-                    onReject={(r) => mReject.mutate({ id: p.id, reason: r })}
                     onStatus={(s) => mStatus.mutate({ id: p.id, status: s })}
                     onRole={(r) => mRole.mutate({ id: p.id, role: r })}
                     onSetZone={(z) => mZone.mutate({ id: p.id, zone: z })}
@@ -297,8 +279,6 @@ function RowActions({
   profile,
   isSelf,
   busy,
-  onApprove,
-  onReject,
   onStatus,
   onRole,
   onSetZone,
@@ -307,8 +287,6 @@ function RowActions({
   profile: Profile
   isSelf: boolean
   busy: boolean
-  onApprove: () => void
-  onReject: (reason: string) => void
   onStatus: (status: AccountStatus) => void
   onRole: (role: Role) => void
   onSetZone: (zone: string | null) => void
@@ -324,16 +302,10 @@ function RowActions({
 
   const actions: { label: string; tone?: 'danger'; run: () => void }[] = []
 
+  // Wala nang approval — ang natitirang 'pending' ay lumang rekord lang,
+  // kaya diretsong pag-activate na lang ang inaalok.
   if (profile.status === 'pending') {
-    actions.push({ label: t('accounts.actionApprove'), run: onApprove })
-    actions.push({
-      label: t('accounts.actionReject'),
-      tone: 'danger',
-      run: () => {
-        const r = window.prompt(t('portal.rejectReasonPrompt'))
-        if (r && r.trim()) onReject(r.trim())
-      },
-    })
+    actions.push({ label: t('accounts.actionReactivate'), run: () => onStatus('active') })
   }
   if (profile.status === 'active') {
     actions.push({

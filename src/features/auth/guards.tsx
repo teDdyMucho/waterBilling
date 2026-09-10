@@ -9,8 +9,13 @@ import { ROLE_HOME, type Role } from '@/types/domain'
  * Ito ang iisang pinagmumulan ng katotohanan para sa redirects.
  */
 function destinationFor(status: string, role: Role): string {
-  if (status === 'pending') return '/pending'
-  if (status === 'suspended' || status === 'rejected') return '/blocked'
+  // Wala nang self-registration at approval — ang admin ang gumagawa ng
+  // account at aktibo agad ito. Ang natitirang 'pending' ay lumang rekord;
+  // itinuturing na naka-block hanggang i-activate ng admin, para hindi ito
+  // mapunta sa pahinang wala na.
+  if (status === 'suspended' || status === 'rejected' || status === 'pending') {
+    return '/blocked'
+  }
   return ROLE_HOME[role] // active
 }
 
@@ -45,8 +50,8 @@ export function RoleGuard({ allow }: { allow: Role[] }) {
 }
 
 /**
- * Para sa /login, /register, /forgot — kapag naka-login na, itapon sa
- * tamang destinasyon imbes na ipakita ulit ang form.
+ * Para sa /login at /forgot — kapag naka-login na, itapon sa tamang
+ * destinasyon imbes na ipakita ulit ang form.
  */
 export function PublicOnly() {
   const { loading, session, profile, profileReady } = useAuth()
@@ -59,20 +64,18 @@ export function PublicOnly() {
   return <Outlet />
 }
 
-/**
- * Para sa /pending at /blocked — kailangan ng session at tugmang status.
- */
-export function StatusRoute({ expect }: { expect: 'pending' | 'blocked' }) {
+/** Para sa /blocked — kailangan ng session at hindi-aktibong status. */
+export function StatusRoute() {
   const { loading, session, profile, profileReady } = useAuth()
   if (loading) return <PageLoader />
   if (!session) return <Navigate to="/login" replace />
   if (!profileReady) return <PageLoader />
   if (!profile) return <ProfileMissingPage />
 
-  const isBlocked = profile.status === 'suspended' || profile.status === 'rejected'
-  const matches = expect === 'pending' ? profile.status === 'pending' : isBlocked
+  const isBlocked =
+    profile.status === 'suspended' || profile.status === 'rejected' || profile.status === 'pending'
 
-  if (!matches) {
+  if (!isBlocked) {
     return <Navigate to={destinationFor(profile.status, profile.role)} replace />
   }
   return <Outlet />

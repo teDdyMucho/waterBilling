@@ -1,12 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Building2, ChevronRight, Droplets, Plus, Search, Trash2, Upload, Zap } from 'lucide-react'
+import { Building2, ChevronRight, Droplets, Search, Trash2, Zap } from 'lucide-react'
 import { deleteProperty, fetchProperties } from '@/features/properties/properties-api'
-import { PropertyFormModal } from '@/features/properties/PropertyFormModal'
-import { ImportCsvModal } from '@/features/properties/ImportCsvModal'
 import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
@@ -26,13 +23,10 @@ const STATUS_TONE: Record<PropertyStatus, BadgeTone> = {
 export function PropertiesList({ basePath }: { basePath: string }) {
   const { t } = useT()
   const navigate = useNavigate()
-  // Admin at staff ay parehong makakagawa/mag-import ng lote.
-  const canManage = basePath.startsWith('/admin') || basePath.startsWith('/staff')
+  // Wala nang pag-add dito — ang bawat row ay binubuksan at ini-edit.
   const canDelete = basePath.startsWith('/admin')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | PropertyStatus>('all')
-  const [addOpen, setAddOpen] = useState(false)
-  const [importOpen, setImportOpen] = useState(false)
   const [confirmDel, setConfirmDel] = useState<{ id: string; label: string } | null>(null)
 
   const qc = useQueryClient()
@@ -72,20 +66,6 @@ export function PropertiesList({ basePath }: { basePath: string }) {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        {canManage && (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setImportOpen(true)}
-              iconLeft={<Upload className="size-4" />}
-            >
-              {t('properties.import')}
-            </Button>
-            <Button onClick={() => setAddOpen(true)} iconLeft={<Plus className="size-4" />}>
-              {t('properties.add')}
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Status filter tabs */}
@@ -117,13 +97,6 @@ export function PropertiesList({ basePath }: { basePath: string }) {
             <EmptyState
               icon={<Building2 className="size-6" />}
               title={t('properties.noProperties')}
-              action={
-                canManage ? (
-                  <Button onClick={() => setAddOpen(true)} iconLeft={<Plus className="size-4" />}>
-                    {t('properties.add')}
-                  </Button>
-                ) : undefined
-              }
             />
           </div>
         ) : (
@@ -140,12 +113,6 @@ export function PropertiesList({ basePath }: { basePath: string }) {
         )}
       </Card>
 
-      {canManage && (
-        <>
-          <PropertyFormModal open={addOpen} onClose={() => setAddOpen(false)} />
-          <ImportCsvModal open={importOpen} onClose={() => setImportOpen(false)} />
-        </>
-      )}
       {confirmDel && (
         <ConfirmDialog
           open

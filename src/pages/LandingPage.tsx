@@ -79,13 +79,8 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <Link to="/register" className="sm:w-auto">
-              <Button size="lg" block iconRight={<ArrowRight className="size-4" />}>
-                {t('landing.ctaPrimary')}
-              </Button>
-            </Link>
             <Link to="/login" className="sm:w-auto">
-              <Button size="lg" variant="outline" block>
+              <Button size="lg" block iconRight={<ArrowRight className="size-4" />}>
                 {t('landing.ctaSecondary')}
               </Button>
             </Link>
@@ -337,14 +332,14 @@ export default function LandingPage() {
               </h2>
               <p className="mt-2 text-brand-100">{t('landing.ctaBannerSub')}</p>
             </div>
-            <Link to="/register" className="w-full shrink-0 lg:w-auto">
+            <Link to="/login" className="w-full shrink-0 lg:w-auto">
               <Button
                 size="lg"
                 block
                 className="border-0 bg-white from-white to-white text-brand-800 shadow-lg ring-0 hover:bg-brand-50 hover:to-brand-50 active:bg-brand-100"
                 iconRight={<ArrowRight className="size-4" />}
               >
-                {t('landing.ctaPrimary')}
+                {t('landing.ctaSecondary')}
               </Button>
             </Link>
           </div>

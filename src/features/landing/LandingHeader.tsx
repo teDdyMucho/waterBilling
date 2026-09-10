@@ -86,9 +86,6 @@ export function LandingHeader() {
               {t('nav.login')}
             </Button>
           </Link>
-          <Link to="/register">
-            <Button size="sm">{t('nav.register')}</Button>
-          </Link>
         </div>
 
         {/* Mobile */}
@@ -131,9 +128,6 @@ export function LandingHeader() {
                 <Button variant="outline" block>
                   {t('nav.login')}
                 </Button>
-              </Link>
-              <Link to="/register" onClick={() => setOpen(false)}>
-                <Button block>{t('nav.register')}</Button>
               </Link>
             </div>
           </nav>

@@ -38,14 +38,7 @@ export default function LoginPage() {
     <AuthShell
       title={t('auth.loginTitle')}
       subtitle={t('auth.loginSub')}
-      footer={
-        <>
-          {t('auth.noAccount')}{' '}
-          <Link to="/register" className="font-semibold text-brand-700 hover:text-brand-800">
-            {t('auth.registerLink')}
-          </Link>
-        </>
-      }
+      footer={t('auth.noAccountAdmin')}
     >
       <form onSubmit={onSubmit} className="space-y-4">
         {error && <Alert tone="danger">{error}</Alert>}

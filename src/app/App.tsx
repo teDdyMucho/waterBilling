@@ -15,10 +15,8 @@ import {
 
 import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/pages/auth/LoginPage'
-import RegisterPage from '@/pages/auth/RegisterPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
-import PendingPage from '@/pages/auth/PendingPage'
 import BlockedPage from '@/pages/auth/BlockedPage'
 import HomeownerHome from '@/pages/portal/HomeownerHome'
 import { HomeownerBills, HomeownerBillDetail } from '@/pages/portal/HomeownerBills'
@@ -67,7 +65,8 @@ export default function App() {
               {/* Auth forms — itatapon ang naka-login na sa tamang lugar */}
               <Route element={<PublicOnly />}>
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
+                {/* Wala nang self-registration — ang admin ang gumagawa ng account */}
+                <Route path="/register" element={<Navigate to="/login" replace />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               </Route>
 
@@ -75,10 +74,7 @@ export default function App() {
               <Route path="/reset-password" element={<ResetPasswordPage />} />
 
               {/* Status screens */}
-              <Route element={<StatusRoute expect="pending" />}>
-                <Route path="/pending" element={<PendingPage />} />
-              </Route>
-              <Route element={<StatusRoute expect="blocked" />}>
+              <Route element={<StatusRoute />}>
                 <Route path="/blocked" element={<BlockedPage />} />
               </Route>
 

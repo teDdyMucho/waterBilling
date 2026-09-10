@@ -2,17 +2,6 @@ import { createProvisionClient, supabase } from '@/lib/supabase'
 import type { AccountStatus, Profile, Role } from '@/types/domain'
 
 /** Lahat ng naghihintay ng approval (pinakaluma muna). */
-export async function fetchPendingProfiles(): Promise<Profile[]> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('status', 'pending')
-    .order('created_at', { ascending: true })
-  if (error) throw error
-  return (data ?? []) as Profile[]
-}
-
-/** Lahat ng profile (para sa Account Management). */
 export async function fetchAllProfiles(): Promise<Profile[]> {
   const { data, error } = await supabase
     .from('profiles')
@@ -53,19 +42,23 @@ export interface ProvisionInput {
   password: string
   fullName: string
   contactNumber?: string
-  role: 'staff' | 'admin'
+  /** Kasama na ang homeowner — wala nang self-registration. */
+  role: 'homeowner' | 'staff' | 'admin'
   zone?: string
+  block?: string
+  lot?: string
 }
 
 /**
- * Gumawa ng bagong STAFF o ADMIN account mula sa admin dashboard.
+ * Gumawa ng bagong account mula sa admin dashboard — homeowner, staff, o admin.
  *
  * Hakbang:
  *  1) Gumamit ng hiwalay na client para mag-signUp (homeowner/pending muna)
  *     — hindi maaapektuhan ang session ng admin.
  *  2) Gamit ang session ng admin (RLS), itaas ang role at gawing active.
  *
- * Aktibo agad — WALANG pending confirmation ang staff/admin (homeowner lang).
+ * Aktibo AGAD ang lahat — wala nang approval mula nang alisin ang
+ * self-registration. Ang admin na ang nagpapasya kung sino ang papasok.
  */
 export async function provisionUser(input: ProvisionInput): Promise<void> {
   const temp = createProvisionClient()
@@ -77,6 +70,8 @@ export async function provisionUser(input: ProvisionInput): Promise<void> {
       data: {
         full_name: input.fullName.trim(),
         contact_number: input.contactNumber?.trim() ?? '',
+        block: input.block?.trim() ?? null,
+        lot: input.lot?.trim() ?? null,
         preferred_language: 'tl',
       },
     },
@@ -98,38 +93,13 @@ export async function provisionUser(input: ProvisionInput): Promise<void> {
       full_name: input.fullName.trim(),
       contact_number: input.contactNumber?.trim() ?? null,
       zone: input.role === 'staff' ? input.zone?.trim() || null : null,
+      block: input.role === 'homeowner' ? input.block?.trim() || null : null,
+      lot: input.role === 'homeowner' ? input.lot?.trim() || null : null,
+      // Ang trigger ay gumagawa nito bilang 'rejected' (sarado ang
+      // self-registration) — dito ito binubuksan ng admin.
+      rejection_reason: null,
       approved_at: new Date().toISOString(),
     })
     .eq('id', newId)
   if (upErr) throw upErr
-}
-
-/** Aprubahan ang isang rehistro → status = active. */
-export async function approveProfile(id: string): Promise<void> {
-  const { data: auth } = await supabase.auth.getUser()
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      status: 'active',
-      approved_by: auth.user?.id ?? null,
-      approved_at: new Date().toISOString(),
-      rejection_reason: null,
-    })
-    .eq('id', id)
-  if (error) throw error
-}
-
-/** Tanggihan ang rehistro → status = rejected + dahilan. */
-export async function rejectProfile(id: string, reason: string): Promise<void> {
-  const { data: auth } = await supabase.auth.getUser()
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      status: 'rejected',
-      rejection_reason: reason,
-      approved_by: auth.user?.id ?? null,
-      approved_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-  if (error) throw error
 }

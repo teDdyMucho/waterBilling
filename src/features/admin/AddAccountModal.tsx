@@ -19,8 +19,10 @@ export function AddAccountModal({ open, onClose }: { open: boolean; onClose: () 
     email: '',
     contact: '',
     password: '',
-    role: 'staff' as 'staff' | 'admin',
+    role: 'homeowner' as 'homeowner' | 'staff' | 'admin',
     zone: '',
+    block: '',
+    lot: '',
   })
   const [error, setError] = useState<string | null>(null)
 
@@ -28,7 +30,16 @@ export function AddAccountModal({ open, onClose }: { open: boolean; onClose: () 
     setForm((f) => ({ ...f, [k]: e.target.value }))
 
   function reset() {
-    setForm({ fullName: '', email: '', contact: '', password: '', role: 'staff', zone: '' })
+    setForm({
+      fullName: '',
+      email: '',
+      contact: '',
+      password: '',
+      role: 'homeowner',
+      zone: '',
+      block: '',
+      lot: '',
+    })
     setError(null)
   }
 
@@ -41,6 +52,8 @@ export function AddAccountModal({ open, onClose }: { open: boolean; onClose: () 
         contactNumber: form.contact,
         role: form.role,
         zone: form.zone,
+        block: form.block,
+        lot: form.lot,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['all-profiles'] })
@@ -100,6 +113,7 @@ export function AddAccountModal({ open, onClose }: { open: boolean; onClose: () 
         {error && <Alert tone="danger">{error}</Alert>}
 
         <Select label={t('accounts.roleField')} value={form.role} onChange={set('role')}>
+          <option value="homeowner">{t('accounts.roleHomeowner')}</option>
           <option value="staff">{t('accounts.roleStaff')}</option>
           <option value="admin">{t('accounts.roleAdmin')}</option>
         </Select>
@@ -111,6 +125,15 @@ export function AddAccountModal({ open, onClose }: { open: boolean; onClose: () 
             value={form.zone}
             onChange={set('zone')}
           />
+        )}
+
+        {/* Block at Lot — ang admin na ang naglalagay nito, dahil wala nang
+            registration form na pinupunan ng homeowner mismo. */}
+        {form.role === 'homeowner' && (
+          <div className="grid grid-cols-2 gap-3">
+            <Input label={t('auth.block')} value={form.block} onChange={set('block')} />
+            <Input label={t('auth.lot')} value={form.lot} onChange={set('lot')} />
+          </div>
         )}
 
         <Input

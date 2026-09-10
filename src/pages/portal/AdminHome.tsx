@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import {
   ArrowRight,
   Banknote,
-  Clock,
   Home,
   PiggyBank,
   ShieldCheck,
@@ -14,7 +13,6 @@ import {
 import { AppShell, PageHeader } from '@/components/AppShell'
 import { StatTile } from '@/components/ui/StatTile'
 import { Button } from '@/components/ui/Button'
-import { PendingApprovals } from '@/features/admin/PendingApprovals'
 import { fetchAllProfiles } from '@/features/admin/admin-api'
 import { fetchDashboardStats } from '@/features/reports/reports-api'
 import { useAuth } from '@/hooks/useAuth'
@@ -32,7 +30,6 @@ export default function AdminHome() {
     total: all.length,
     homeowners: all.filter((p) => p.role === 'homeowner').length,
     staff: all.filter((p) => p.role === 'staff').length,
-    pending: all.filter((p) => p.status === 'pending').length,
   }
 
   return (
@@ -76,16 +73,6 @@ export default function AdminHome() {
           value={count.staff}
           tint="success"
         />
-        <StatTile
-          icon={<Clock className="size-5" />}
-          label={t('portal.pendingApprovals')}
-          value={count.pending}
-          tint="warning"
-        />
-      </div>
-
-      <div className="mt-6">
-        <PendingApprovals />
       </div>
     </AppShell>
   )
