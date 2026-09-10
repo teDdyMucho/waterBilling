@@ -58,9 +58,6 @@ export function PropertyPicker({
   // Wala sa listahan ang hinahanap — dito gumagawa ng bagong lote,
   // kasama na ang account ng homeowner nito.
   const [addOpen, setAddOpen] = useState(false)
-  // Ang katatapos lang gawin — pipiliin ito pagsara ng modal, para hindi
-  // na hanapin muli ang kaka-add lang.
-  const [createdId, setCreatedId] = useState<string | null>(null)
 
   const rows = useMemo(() => {
     const map = new Map<string, Row>()
@@ -178,16 +175,12 @@ export function PropertyPicker({
 
       <NewPropertyAccountModal
         open={addOpen}
-        onCreated={(res) => setCreatedId(res.property_id)}
-        onClose={() => {
-          setAddOpen(false)
-          if (createdId) {
-            // Balik sa picker, napili na ang bagong lote.
-            onChange(createdId)
-            setCreatedId(null)
-            setSearch('')
-          }
+        onCreated={(res) => {
+          // Balik sa upload modal, napili na ang bagong lote.
+          onChange(res.property_id)
+          setSearch('')
         }}
+        onClose={() => setAddOpen(false)}
       />
 
       <ul className="max-h-56 divide-y divide-slate-100 overflow-y-auto rounded-input border border-slate-200">

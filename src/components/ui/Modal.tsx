@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
@@ -35,7 +36,11 @@ export function Modal({
 
   const maxW = size === 'sm' ? 'sm:max-w-sm' : size === 'lg' ? 'sm:max-w-2xl' : 'sm:max-w-lg'
 
-  return (
+  // Portal sa body: kapag may modal na binubuksan mula sa loob ng isa pang
+  // modal (hal. Add property sa loob ng encode form), hindi ito mapupunta
+  // sa loob ng <form> ng una — hindi magkakapatong ang forms, at hindi
+  // masisira ng transform/overflow ng panlabas ang fixed na posisyon.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <div
         className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
@@ -74,6 +79,7 @@ export function Modal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

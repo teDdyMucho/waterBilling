@@ -65,14 +65,24 @@ export function NewPropertyAccountModal({
       qc.invalidateQueries({ queryKey: ['properties'] })
       qc.invalidateQueries({ queryKey: ['all-profiles'] })
       qc.invalidateQueries({ queryKey: ['open-worklist'] })
+      if (onCreated) {
+        // Mula sa encode form: diretso nang balik doon, napili na ang
+        // bagong lote. Ang credentials ay nasa Account Management
+        // ("Ibahagi ang access") — hindi kailangang harangin ang daloy.
+        onCreated(res)
+        onClose()
+        return
+      }
       setCreated(res)
-      onCreated?.(res)
     },
     onError: (e) => setError(e instanceof Error ? e.message : t('common.somethingWrong')),
   })
 
   function onSubmit(e: FormEvent) {
     e.preventDefault()
+    // Binubuksan ito mula sa loob ng encode form — huwag hayaang umakyat
+    // ang submit doon, kung hindi ay tatakbo rin ang validation nito.
+    e.stopPropagation()
     setError(null)
     if (!form.block.trim() || !form.lot.trim()) return setError(t('common.required'))
     mutation.mutate()
