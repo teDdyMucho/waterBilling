@@ -106,8 +106,8 @@
   "setup": {
     "title": "Set up your account",
     "sub": "Tell us your name and address so your bills are addressed correctly. You only do this once.",
-    "address": "Address",
-    "addressPh": "House number and street",
+    "address": "Full address",
+    "addressPh": "House no., street, barangay, city",
     "save": "Save and continue"
   },
   "welcome": {

@@ -106,8 +106,8 @@
   "setup": {
     "title": "I-set up ang account mo",
     "sub": "Ilagay ang pangalan at address para tama ang pagkakasulat sa bill mo. Minsan mo lang ito gagawin.",
-    "address": "Address",
-    "addressPh": "Bilang ng bahay at kalye",
+    "address": "Buong address",
+    "addressPh": "Numero ng bahay, kalye, barangay, lungsod",
     "save": "I-save at magpatuloy"
   },
   "welcome": {
