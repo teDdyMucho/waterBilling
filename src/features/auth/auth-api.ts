@@ -68,3 +68,24 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
   if (error) throw error
   return data as Profile | null
 }
+
+/** Ang ipinapakita sa /welcome/:token — limitado, pampubliko (0032). */
+export type WelcomeInfo = {
+  block: string | null
+  lot: string | null
+  email: string | null
+  status: string
+  setup_done: boolean
+}
+
+/** NULL kapag hindi valid ang token. Puwedeng tawagin kahit hindi naka-login. */
+export async function fetchWelcomeInfo(token: string): Promise<WelcomeInfo | null> {
+  const { data, error } = await supabase.rpc('welcome_info', { p_token: token })
+  if (error) throw error
+  return (data as WelcomeInfo | null) ?? null
+}
+
+/** Ang link na ibinibigay sa homeowner — isang link lang, walang password. */
+export function welcomeLink(inviteToken: string) {
+  return `${window.location.origin}/welcome/${inviteToken}`
+}

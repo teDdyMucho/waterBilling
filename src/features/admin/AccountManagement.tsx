@@ -26,8 +26,8 @@ import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Spinner } from '@/components/ui/Spinner'
-import { CredentialsBlock } from '@/features/properties/NewPropertyAccountModal'
-import { Modal } from '@/components/ui/Modal'
+import { CopyButton } from '@/components/ui/CopyButton'
+import { welcomeLink } from '@/features/auth/auth-api'
 import { useAuth } from '@/hooks/useAuth'
 import { useT } from '@/hooks/useT'
 import { lotLabel } from '@/lib/format'
@@ -53,13 +53,6 @@ function needsSetup(p: Profile) {
   return p.role === 'homeowner' && !p.setup_completed_at
 }
 
-/**
- * Ang password ay hindi nababasa mula sa database (naka-hash). Ito ang
- * default na ibinibigay ng create_property_with_account — tama ito hangga't
- * hindi pa nagpapalit ang homeowner, at doon lang naman ito ipinapakita.
- */
-const DEFAULT_PASSWORD = '123456'
-
 export function AccountManagement() {
   const { t } = useT()
   const { user, profile } = useAuth()
@@ -68,8 +61,6 @@ export function AccountManagement() {
   const [filter, setFilter] = useState<RoleFilter>('all')
   const [addOpen, setAddOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  // Ang link ng bagong homeowner — ipinapadala ng staff/admin.
-  const [share, setShare] = useState<Profile | null>(null)
   // Ang staff ay nakakakita lang ng homeowner (RLS) at walang kapangyarihang
   // magbago ng account — ang link lang ang magagawa nila.
   const isAdmin = profile?.role === 'admin'
@@ -232,17 +223,7 @@ export function AccountManagement() {
                             : '—'}
                       </td>
                       <td className="px-5 py-3 text-right">
-                        {needsSetup(p) && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="mr-2"
-                            onClick={() => setShare(p)}
-                            iconLeft={<LinkIcon className="size-3.5" />}
-                          >
-                            {t('accounts.shareAccess')}
-                          </Button>
-                        )}
+                        {needsSetup(p) && <ShareLinkButton profile={p} className="mr-2" />}
                         {isAdmin && (
                         <RowActions
                           profile={p}
@@ -290,17 +271,7 @@ export function AccountManagement() {
                       )}
                     </div>
 
-                    {needsSetup(p) && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="mt-2"
-                        onClick={() => setShare(p)}
-                        iconLeft={<LinkIcon className="size-3.5" />}
-                      >
-                        {t('accounts.shareAccess')}
-                      </Button>
-                    )}
+                    {needsSetup(p) && <ShareLinkButton profile={p} className="mt-2" />}
                   </div>
                   {isAdmin && (
                     <RowActions
@@ -321,24 +292,25 @@ export function AccountManagement() {
       </Card>
 
       {isAdmin && <AddAccountModal open={addOpen} onClose={() => setAddOpen(false)} />}
-
-      {/* Link + credentials na ipapadala sa bagong homeowner */}
-      {share && (
-        <Modal
-          open
-          onClose={() => setShare(null)}
-          title={t('accounts.shareTitle')}
-          description={`${lotLabel(share.block, share.lot)} · ${t('accounts.shareSub')}`}
-          footer={
-            <Button variant="outline" onClick={() => setShare(null)}>
-              {t('common.close')}
-            </Button>
-          }
-        >
-          <CredentialsBlock email={share.email ?? ''} password={DEFAULT_PASSWORD} />
-        </Modal>
-      )}
     </>
+  )
+}
+
+/**
+ * "Ibahagi ang access" — kinokopya LANG ang welcome link (/welcome/:token).
+ * Ipapadala ito ng staff sa homeowner; sa pahinang iyon nakasulat ang
+ * paliwanag, mga hakbang, at ang email/password niya.
+ */
+function ShareLinkButton({ profile, className }: { profile: Profile; className?: string }) {
+  const { t } = useT()
+  return (
+    <CopyButton
+      size="sm"
+      className={className}
+      text={welcomeLink(profile.invite_token)}
+      label={t('accounts.shareAccess')}
+      icon={<LinkIcon className="size-3.5" />}
+    />
   )
 }
 

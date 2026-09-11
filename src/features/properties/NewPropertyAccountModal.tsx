@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Check, Copy, Droplets, Zap } from 'lucide-react'
+import { Droplets, Zap } from 'lucide-react'
 import {
   createPropertyWithAccount,
   type NewPropertyAccount,
@@ -8,6 +8,7 @@ import {
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { CopyButton } from '@/components/ui/CopyButton'
 import { Alert } from '@/components/ui/Alert'
 import { useT } from '@/hooks/useT'
 
@@ -178,7 +179,7 @@ export function CredentialsBlock({ email, password }: { email: string; password:
       <Field label={t('auth.email')} value={email} />
       <Field label={t('auth.password')} value={password} />
 
-      <CopyButton text={message} label={t('properties.copyAll')} block />
+      <CopyButton text={message} label={t('properties.copyAll')} variant="primary" block />
 
       <p className="text-xs text-slate-500">{t('properties.shareNote')}</p>
     </div>
@@ -196,42 +197,5 @@ function Field({ label, value }: { label: string; value: string }) {
         <CopyButton text={value} />
       </div>
     </div>
-  )
-}
-
-function CopyButton({
-  text,
-  label,
-  block = false,
-}: {
-  text: string
-  label?: string
-  block?: boolean
-}) {
-  const { t } = useT()
-  const [done, setDone] = useState(false)
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(text)
-      setDone(true)
-      setTimeout(() => setDone(false), 1800)
-    } catch {
-      // Ang clipboard ay hinaharangan sa ilang browser — huwag magpakita
-      // ng "nakopya" kung hindi naman totoo.
-      setDone(false)
-    }
-  }
-
-  return (
-    <Button
-      type="button"
-      variant={block ? 'primary' : 'outline'}
-      block={block}
-      onClick={copy}
-      iconLeft={done ? <Check className="size-4" /> : <Copy className="size-4" />}
-    >
-      {done ? t('properties.copied') : (label ?? t('common.copy'))}
-    </Button>
   )
 }

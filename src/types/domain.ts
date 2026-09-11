@@ -19,6 +19,8 @@ export interface Profile {
   rejection_reason: string | null
   /** NULL = hindi pa napupunan ng homeowner ang pangalan at address. */
   setup_completed_at: string | null
+  /** Lihim na token ng welcome link (/welcome/:token) — migration 0032. */
+  invite_token: string
   approved_by: string | null
   approved_at: string | null
   created_at: string

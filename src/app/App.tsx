@@ -20,6 +20,7 @@ import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import BlockedPage from '@/pages/auth/BlockedPage'
 import SetupPage from '@/pages/auth/SetupPage'
+import WelcomePage from '@/pages/auth/WelcomePage'
 import HomeownerHome from '@/pages/portal/HomeownerHome'
 import { HomeownerBills, HomeownerBillDetail } from '@/pages/portal/HomeownerBills'
 // Lazy — recharts ay mabigat; huwag isama sa initial bundle.
@@ -63,6 +64,8 @@ export default function App() {
             <Routes>
               {/* Public */}
               <Route path="/" element={<LandingPage />} />
+              {/* Welcome link ng bagong homeowner — bukas kahit hindi naka-login */}
+              <Route path="/welcome/:token" element={<WelcomePage />} />
 
               {/* Auth forms — itatapon ang naka-login na sa tamang lugar */}
               <Route element={<PublicOnly />}>

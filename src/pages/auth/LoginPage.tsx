@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Mail } from 'lucide-react'
 import { AuthShell } from '@/features/auth/AuthShell'
 import { signInWithPassword } from '@/features/auth/auth-api'
@@ -11,7 +11,9 @@ import { useT } from '@/hooks/useT'
 
 export default function LoginPage() {
   const { t } = useT()
-  const [email, setEmail] = useState('')
+  // Mula sa welcome link: /login?email=… — naka-prefill na ang email.
+  const [params] = useSearchParams()
+  const [email, setEmail] = useState(params.get('email') ?? '')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
