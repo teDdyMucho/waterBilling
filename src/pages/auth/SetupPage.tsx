@@ -70,7 +70,7 @@ export default function SetupPage() {
               {error && <Alert tone="danger">{error}</Alert>}
 
               <Input
-                label={`${t('auth.fullName')} *`}
+                label={t('auth.fullName')}
                 placeholder={t('auth.fullNamePh')}
                 iconLeft={<User className="size-4" />}
                 required
