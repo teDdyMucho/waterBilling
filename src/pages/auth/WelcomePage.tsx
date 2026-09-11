@@ -95,7 +95,7 @@ export default function WelcomePage() {
                 <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-brand-50 ring-1 ring-inset ring-white/15">
                   {t('welcome.forLot', { lot: lotLabel(data.block, data.lot) })}
                 </span>
-                <h1 className="display mt-4 text-2xl font-bold sm:text-3xl">{t('welcome.title')}</h1>
+                <h1 className="display mt-4 text-2xl font-bold text-white sm:text-3xl">{t('welcome.title')}</h1>
                 <p className="mt-3 text-[0.9375rem] leading-relaxed text-brand-100/90">
                   {t('welcome.sub')}
                 </p>
